@@ -152,8 +152,10 @@ class AccountMove(models.Model):
         rc_type = self.fiscal_position_id.rc_type_id
         payment_reg = (
             self.env["account.payment.register"]
-            .with_context(active_model="account.move", active_ids=[
-                self.id, self.rc_self_invoice_id.id])
+            .with_context(
+                active_model="account.move",
+                active_ids=[self.id, self.rc_self_invoice_id.id],
+            )
             .create(
                 {
                     "payment_date": self.date,
@@ -305,9 +307,7 @@ class AccountMove(models.Model):
                     (6, False, mapped_taxes.ids),
                 ]
             line_vals["account_id"] = rc_type.transitory_account_id.id
-            invoice_line_vals.append(
-                (0, 0, line_vals)
-            )
+            invoice_line_vals.append((0, 0, line_vals))
         supplier_invoice.write({"invoice_line_ids": invoice_line_vals})
         self.rc_self_purchase_invoice_id = supplier_invoice.id
 
