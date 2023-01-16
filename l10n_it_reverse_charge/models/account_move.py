@@ -278,7 +278,9 @@ class AccountMove(models.Model):
             supplier_invoice = self.rc_self_purchase_invoice_id
             for line in supplier_invoice.line_ids:
                 line.remove_move_reconcile()
-            supplier_invoice.invoice_line_ids.unlink()
+            supplier_invoice.line_ids.unlink()
+            # temporary disabling self invoice automations
+            supplier_invoice.fiscal_position_id = False
 
         supplier_invoice_vals["partner_bank_id"] = None
         # because this field has copy=False
