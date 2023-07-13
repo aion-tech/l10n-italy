@@ -57,6 +57,7 @@ class Report(models.TransientModel):
 
     show_category_totals = fields.Boolean()
     show_dismissed_assets = fields.Boolean()
+    show_sold_assets = fields.Boolean()
 
     type_ids = fields.Many2many(
         "asset.depreciation.type",
@@ -308,6 +309,12 @@ class Report(models.TransientModel):
                 "|",
                 ("dismiss_date", "=", False),
                 ("dismiss_date", ">=", self.date.replace(month=1, day=1)),
+            ]
+        if not self.show_sold_assets:
+            domain += [
+                "|",
+                ("sale_date", "=", False),
+                ("sale_date", ">=", self.date.replace(month=1, day=1)),
             ]
         return self.env["asset.asset"].search(domain)
 

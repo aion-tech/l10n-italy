@@ -72,6 +72,7 @@ class WizardAssetJournalReport(models.TransientModel):
 
     show_category_totals = fields.Boolean(default=True, string="Show Category Totals")
     show_dismissed_assets = fields.Boolean()
+    show_sold_assets = fields.Boolean()
 
     report_footer_year = fields.Char(
         default=get_default_report_footer_year, string="Report Footer Year"
@@ -154,6 +155,7 @@ class WizardAssetJournalReport(models.TransientModel):
             "show_totals": self.show_totals,
             "show_category_totals": self.show_category_totals,
             "show_dismissed_assets": self.show_dismissed_assets,
+            "show_sold_assets": self.show_sold_assets,
             "report_footer_year": self.report_footer_year,
             "type_ids": [(6, 0, self.type_ids.ids)],
         }
