@@ -56,6 +56,8 @@ class Report(models.TransientModel):
     show_totals = fields.Boolean()
 
     show_category_totals = fields.Boolean()
+    show_dismissed_assets = fields.Boolean()
+    show_sold_assets = fields.Boolean()
 
     type_ids = fields.Many2many(
         "asset.depreciation.type",
@@ -302,6 +304,18 @@ class Report(models.TransientModel):
             domain += [("company_id", "=", self.company_id.id)]
         if self.date:
             domain += [("purchase_date", "<=", self.date)]
+        if not self.show_dismissed_assets:
+            domain += [
+                "|",
+                ("dismiss_date", "=", False),
+                ("dismiss_date", ">=", self.date.replace(month=1, day=1)),
+            ]
+        if not self.show_sold_assets:
+            domain += [
+                "|",
+                ("sale_date", "=", False),
+                ("sale_date", ">=", self.date.replace(month=1, day=1)),
+            ]
         return self.env["asset.asset"].search(domain)
 
     def set_report_name(self):
@@ -799,7 +813,13 @@ class ReportDepreciationLineByYear(models.TransientModel):
         asset = self.report_depreciation_id.report_asset_id.asset_id
         fy_start = self.fiscal_year_id.date_from
         fy_end = self.fiscal_year_id.date_to
-        if asset.sold and asset.sale_date and fy_start <= asset.sale_date <= fy_end:
+        if (
+            asset.sold and asset.sale_date and fy_start <= asset.sale_date <= fy_end
+        ) or (
+            asset.dismissed
+            and asset.dismiss_date
+            and fy_start <= asset.dismiss_date <= fy_end
+        ):
             amount_depreciable_upd = 0.0
             depreciation_fund_curr_year = 0.0
             amount_residual = 0.0
