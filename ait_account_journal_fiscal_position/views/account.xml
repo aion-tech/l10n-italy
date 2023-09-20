@@ -1,0 +1,14 @@
+<odoo>
+  <data>
+    <record id="view_account_position_form_ait" model="ir.ui.view">
+        <field name="name">account.fiscal.position.form.ait.account.journal.fiscal.position</field>
+        <field name="model">account.fiscal.position</field>
+        <field name="inherit_id" ref="account.view_account_position_form"/>
+        <field name="arch" type="xml">
+            <field name="country_id" position="after">
+                  <field name="default_account_jounal" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+  </data>
+</odoo>
