@@ -1,0 +1,9 @@
+<odoo>
+  <data>
+    <template id="search_template_extra_options_date_accounting" inherit_id="account_reports.search_template_extra_options">
+      <xpath expr="//div[hasclass('dropdown-menu')]" position="inside">
+        <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('accounting_date') != None" title="Accounting Date" data-filter="accounting_date">Accounting Date</a>
+      </xpath>
+    </template>
+  </data>
+</odoo>
