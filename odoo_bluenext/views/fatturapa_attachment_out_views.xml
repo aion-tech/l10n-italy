@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record
+    id="view_fatturapa_out_attachment_form_inherit_l10n_it_fatturapa_out"
+    model="ir.ui.view">
+        <field name="name">fatturapa.attachment.out.view.form.inherit</field>
+        <field name="model">fatturapa.attachment.out</field>
+        <field
+        name="inherit_id"
+        ref="l10n_it_fatturapa_out.view_fatturapa_out_attachment_form" />
+        <field
+        name="arch"
+        type="xml">
+            <xpath
+            expr="//header"
+            position="inside">
+                <!-- <button -->
+                <!-- type="object" -->
+                <!-- states="sent,sender_error,recipient_error,rejected,validated,accepted" -->
+                <!-- class="btn oe_highlight" -->
+                <!-- name="reset_state_btn" -->
+                <!-- string="Reset State" /> -->
+                <!-- <button -->
+                <!-- type="object" -->
+                <!-- class="btn oe_highlight" -->
+                <!-- name="_update_invoice_states" -->
+                <!-- string="Update State" /> -->
+                <button
+                type="object"
+                class="btn oe_highlight"
+                name="bluenext_send_documents_btn"
+                attrs="{'invisible': ['|', ('state', 'not in', ['ready']),('bluenext_archive_id', '!=', False)]}"
+                string="Send" />
+                <button
+                name="update_bluenext_state_btn"
+                type="object"
+                class="btn oe_highlight"
+                string="Update State"
+                attrs="{'invisible': [('bluenext_archive_id', '=', False)]}" />
+            </xpath>
+            <field
+            name="invoice_partner_id"
+            position="after">
+                <field name="bluenext_archive_id" />
+                <field
+                name="bluenext_xml_filename"
+                readonly="0" />
+                <field
+                name="bluenext_zip_filename"
+                groups="base.group_no_one" />
+                <field
+                name="bluenext_state"
+                groups="base.group_no_one" />
+            </field>
+        </field>
+    </record>
+</odoo>

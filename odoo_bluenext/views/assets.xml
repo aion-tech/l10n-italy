@@ -1,0 +1,15 @@
+<!-- <?xml version="1.0" encoding="utf-8"?> -->
+<!-- <odoo> -->
+<!--     <template -->
+<!--     id="assets_backend" -->
+<!--     name="odoo_dhz assets backend" -->
+<!--     inherit_id="web.assets_backend"> -->
+<!--         <xpath -->
+<!--         expr="." -->
+<!--         position="inside"> -->
+<!--             <script -->
+<!--             type="text/javascript" -->
+<!--             src="/odoo_bluenext/static/src/js/fatturapa_attachment_in.js" /> -->
+<!--         </xpath> -->
+<!--     </template> -->
+<!-- </odoo> -->

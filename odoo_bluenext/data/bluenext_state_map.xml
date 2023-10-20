@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record
+        id="bluenext_state_map_0"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">0</field>
+            <field name="odoo_attachment_out_state">ready</field>
+        </record>
+        <record
+        id="bluenext_state_map_1"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">1</field>
+            <field name="odoo_attachment_out_state">ready</field>
+        </record>
+        <record
+        id="bluenext_state_map_2"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">2</field>
+            <field name="odoo_attachment_out_state">sender_error</field>
+        </record>
+        <!-- <record -->
+        <!-- id="bluenext_state_map_3" -->
+        <!-- model="bluenext.state.map"> -->
+        <!--     <field name="bluenext_invoice_state">3</field> -->
+        <!--     <field name="odoo_attachment_out_state"></field> -->
+        <!-- </record> -->
+        <!-- <record -->
+        <!-- id="bluenext_state_map_4" -->
+        <!-- model="bluenext.state.map"> -->
+        <!--     <field name="bluenext_invoice_state">4</field> -->
+        <!--     <field name="odoo_attachment_out_state"></field> -->
+        <!-- </record> -->
+        <record
+        id="bluenext_state_map_5"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">5</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_6"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">6</field>
+            <field name="odoo_attachment_out_state">sender_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_7"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">7</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_8"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">8</field>
+            <field name="odoo_attachment_out_state">sender_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_9"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">9</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_10"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">10</field>
+            <field name="odoo_attachment_out_state">sender_error</field>
+        </record>
+        <!-- <record -->
+        <!-- id="bluenext_state_map_11" -->
+        <!-- model="bluenext.state.map"> -->
+        <!--     <field name="bluenext_invoice_state">11</field> -->
+        <!--     <field name="odoo_attachment_out_state"></field> -->
+        <!-- </record> -->
+        <!-- <record -->
+        <!-- id="bluenext_state_map_12" -->
+        <!-- model="bluenext.state.map"> -->
+        <!--     <field name="bluenext_invoice_state">12</field> -->
+        <!--     <field name="odoo_attachment_out_state"></field> -->
+        <!-- </record> -->
+        <record
+        id="bluenext_state_map_13"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">13</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_14"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">14</field>
+            <field name="odoo_attachment_out_state">sender_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_15"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">15</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_16"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">16</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <record
+        id="bluenext_state_map_17"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">17</field>
+            <field name="odoo_attachment_out_state">recipient_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_18"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">18</field>
+            <field name="odoo_attachment_out_state">recipient_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_19"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">19</field>
+            <field name="odoo_attachment_out_state">recipient_error</field>
+        </record>
+        <record
+        id="bluenext_state_map_20"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">20</field>
+            <field name="odoo_attachment_out_state">sent</field>
+        </record>
+        <!-- <record -->
+        <!-- id="bluenext_state_map_21" -->
+        <!-- model="bluenext.state.map"> -->
+        <!--     <field name="bluenext_invoice_state">21</field> -->
+        <!--     <field name="odoo_attachment_out_state"></field> -->
+        <!-- </record> -->
+        <record
+        id="bluenext_state_map_22"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">22</field>
+            <field name="odoo_attachment_out_state">accepted</field>
+        </record>
+        <record
+        id="bluenext_state_map_23"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">23</field>
+            <field name="odoo_attachment_out_state">rejected</field>
+        </record>
+        <record
+        id="bluenext_state_map_24"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">24</field>
+            <field name="odoo_attachment_out_state">accepted</field>
+        </record>
+        <record
+        id="bluenext_state_map_25"
+        model="bluenext.state.map">
+            <field name="bluenext_invoice_state">25</field>
+            <field name="odoo_attachment_out_state">rejected</field>
+        </record>
+    </data>
+</odoo>
