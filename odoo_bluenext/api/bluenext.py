@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import Dict, List, Union
 
 import requests
+import simplejson
 from odoo.exceptions import ValidationError
 from typing_extensions import Literal
 
@@ -61,7 +62,7 @@ class Bluenext:
                     )
                 elif error == "return":
                     return res["Error"]
-        except json.decoder.JSONDecodeError:
+        except (json.decoder.JSONDecodeError, simplejson.errors.JSONDecodeError):
             res = response.text
 
         return res
