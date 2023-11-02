@@ -20,7 +20,8 @@ def migrate(env, version):
         (table_name, "%s" % constraint_name),
     )
 
-    if env.cr.fetchall()[0]:
+    res = env.cr.fetchall()
+    if res and res[0]:
         alter_table_sql = sql.SQL("ALTER TABLE {} DROP CONSTRAINT {}").format(
             sql.Identifier(table_name), sql.Identifier(constraint_name)
         )
@@ -28,3 +29,6 @@ def migrate(env, version):
 
         openupgrade.logged_query(env.cr, alter_table_sql)
         openupgrade.logged_query(env.cr, drop_line_sql, [constraint_name])
+
+    view = env.ref("l10n_it_fatturapa_out.view_fatturapa_out_attachment_form")
+    view.inherit_id = False
