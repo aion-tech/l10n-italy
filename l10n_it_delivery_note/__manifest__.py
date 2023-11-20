@@ -30,6 +30,7 @@
         "security/ir_rule.xml",
         "security/res_groups.xml",
         "security/res_users.xml",
+        "report/delivery_data.xml",
         "report/report_delivery_note.xml",
         "views/account_move.xml",
         "views/res_config_settings.xml",
