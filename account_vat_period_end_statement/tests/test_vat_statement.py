@@ -1,4 +1,5 @@
 #  Copyright 2015 Agile Business Group <http://www.agilebg.com>
+#  Copyright 2023 Simone Rubino - Aion Tech
 #  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from datetime import date, datetime
@@ -261,3 +262,56 @@ class TestTax(AccountTestInvoicingCommon):
                 self.assertEqual(line.debit, 100)
         self.assertTrue(vat_auth_found)
         # TODO payment
+
+    def _add_period(self, statement, date_range):
+        add_period_wizard = (
+            self.env["add.period.to.vat.statement"]
+            .with_context(
+                active_model=statement._name,
+                active_id=statement.id,
+            )
+            .create(
+                {
+                    "period_id": date_range.id,
+                }
+            )
+        )
+        return add_period_wizard.add_period()
+
+    def test_create_move_with_payment_term(self):
+        """When there is a payment term, the move can be created."""
+        # Arrange
+        date_range = self.current_period
+        out_invoice = self.init_invoice(
+            "out_invoice",
+            invoice_date=self.recent_date,
+            amounts=[
+                100,
+            ],
+            taxes=self.account_tax_22,
+            post=True,
+        )
+        statement = self.vat_statement_model.create(
+            {
+                "journal_id": self.general_journal.id,
+                "authority_vat_account_id": self.vat_authority.id,
+                "payment_term_id": self.env.ref(
+                    "account.account_payment_term_advance_60days"
+                ).id,
+                "date": self.last_year_date,
+            }
+        )
+        self._add_period(statement, date_range)
+        # pre-condition
+        self.assertTrue(statement.payment_term_id)
+        self.assertIn(date_range, statement.date_range_ids)
+        date_range_domain = date_range.get_domain("invoice_date")
+        date_range_invoices = self.invoice_model.search(date_range_domain)
+        self.assertIn(out_invoice, date_range_invoices)
+
+        # Act
+        statement.create_move()
+
+        # Assert
+        move = statement.move_id
+        self.assertEqual(move.amount_total, 22)
