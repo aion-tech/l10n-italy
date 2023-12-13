@@ -91,7 +91,13 @@ class AccountPartialReconcile(models.Model):
                 )
                 == 1
             ):
-                vals.update({"amount": paying_invoice.amount_net_pay})
+                vals.update(
+                    {
+                        "amount": paying_invoice.amount_net_pay,
+                        "credit_amount_currency": paying_invoice.amount_net_pay,
+                        "debit_amount_currency": paying_invoice.amount_net_pay,
+                    }
+                )
 
         # Create reconciliation
         reconcile = super(AccountPartialReconcile, self).create(vals)
@@ -396,6 +402,13 @@ class AccountMove(models.Model):
             for line in reconciled_amls:
                 if not line.withholding_tax_generated_by_move_id:
                     amount_net_pay_residual -= line.debit or line.credit
+            if (
+                float_compare(
+                    amount_net_pay_residual, 0, dp_obj.precision_get("Account")
+                )
+                == -1
+            ):
+                amount_net_pay_residual = 0
             invoice.amount_net_pay_residual = float_round(
                 amount_net_pay_residual, dp_obj.precision_get("Account")
             )
