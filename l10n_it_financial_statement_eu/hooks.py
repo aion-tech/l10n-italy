@@ -1,4 +1,3 @@
-'''
 from openupgradelib import openupgrade
 from openupgradelib.openupgrade import logged_query
 
@@ -36,10 +35,8 @@ RENAMED_MODELS = [
 
 RENAMED_FIELDS = [
     (
-        "account.account.type",
-        "account_account_type",
-        "account_balance_report_section",
-        "financial_statements_report_section",
+        "balance_id",
+        "financial_statement_id",
     ),
 ]
 
@@ -61,10 +58,6 @@ def remove_models(cr, model_spec):
 
 
 def migrate_old_module(cr):
-    remove_models(
-        cr,
-        REMOVED_MODELS,
-    )
     openupgrade.rename_models(
         cr,
         RENAMED_MODELS,
@@ -102,4 +95,3 @@ def pre_absorb_old_module(cr):
             merge_modules=True,
         )
         migrate_old_module(cr)
-'''
