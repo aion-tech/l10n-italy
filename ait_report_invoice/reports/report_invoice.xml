@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="external_layout_invoice">
+        <t t-call="ait_report_common.company_header"/>
+
+        <div t-attf-class="article o_report_layout_clean o_company_#{doc.company_id}_layout"  
+        t-att-data-oe-model="doc and doc._name" t-att-data-oe-id="doc and doc.id" 
+        t-att-data-oe-lang="doc and doc.env.context.get('lang')"
+        id="ait_ir_t_address_layout">
+            <t t-call="web.address_layout"/>
+            <t t-raw="0"/>
+        </div>
+
+        <div t-attf-class="footer o_clean_footer o_company_#{doc.company_id}_layout" 
+        style="font-size: 11px !important;" id="ait_ir_footer_div">
+            <div id="ait_ir_footer_shipping_info">
+                <table class="table table-borderless" id="ait_ir_dn_info_table">
+                    <thead id="ait_ir_dn_info_thead_1">
+                        <th style="width:20%;" id="ait_ir_dn_info_th_gross_weight">
+                            Gross weight
+                        </th>
+                        <th style="width:20%;" id="ait_ir_dn_info_th_net_weight">
+                            Net weight
+                        </th>
+                        <th style="width:20%;" id="ait_ir_dn_info_th_volume">
+                            Volume
+                        </th>
+                        <th style="width:20%;" id="ait_ir_dn_info_th_packages">
+                            Packages
+                        </th>
+                        <th style="width:20%;" id="ait_ir_dn_info_th_transport_date">
+                            Transport date
+                        </th>
+                    </thead>
+                    <tbody id="ait_ir_dn_info_body_1">
+                        <tr id="ait_ir_dn_info_tr_1">
+                            <td id="ait_ir_dn_info_td_gross_weight">
+                                <span t-field="doc.delivery_gross_weight" class="m-0" />                                
+                            </td>
+                            <td id="ait_ir_dn_info_td_net_weight">
+                                <span t-field="doc.delivery_net_weight" class="m-0" />
+                            </td>
+                            <td id="ait_ir_dn_info_td_volume">
+                                <span t-field="doc.delivery_volume" class="m-0" />
+                            </td>
+                            <td id="ait_ir_dn_info_td_packages">
+                                <span t-field="doc.delivery_packages" class="m-0" />
+                            </td>
+                            <td id="ait_ir_dn_info_td_transport_date">
+                                <span t-field="doc.delivery_transport_datetime" class="m-0" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-borderless" id="ait_ir_values_table">
+                    <thead id="ait_ir_values_thead_1">
+                        <th style="width:20%;" id="ait_ir_values_th_due_date">
+                            Due date
+                        </th>
+                        <th style="width:20%;" id="ait_ir_values_th_net_value">
+                            Net Value
+                        </th>
+                        <th style="width:20%;" id="ait_ir_values_th_vat_value">
+                            Vat Value
+                        </th>
+                        <th style="width:20%;" id="ait_ir_values_th_gross_value">
+                            Gross Value
+                        </th>
+                        <th style="width:20%;" id="ait_ir_values_th_due_value">
+                            Due Value
+                        </th>
+                    </thead>
+                    <tbody id="ait_ir_values_body_1">
+                        <tr id="ait_ir_values_tr_1">
+                            <td id="ait_ir_values_td_due_date">
+                                <t t-if="doc.invoice_date_due">
+                                    <span t-field="doc.invoice_date_due" class="m-0" />
+                                </t>
+                                <t t-if=" not doc.invoice_date_due">
+                                    <span t-field="doc.invoice_payment_term_id.name" class="m-0" />
+                                </t>
+                            </td>
+                            <td id="ait_ir_values_td_net_value">
+                                <span t-field="doc.amount_untaxed" class="m-0" />
+                            </td>
+                            <td id="ait_ir_values_td_vat_value">
+                                <span t-field="doc.amount_tax" class="m-0" />
+                            </td>
+                            <td id="ait_ir_values_td_gross_value">
+                                <span t-field="doc.amount_total" class="m-0" />
+                            </td>
+                            <td id="ait_ir_values_td_due_value">
+                                <span t-field="doc.amount_residual" class="m-0" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+
+    <template id="ait_ir_report_invoice">
+        <t t-call="ait_report_invoice.external_layout_invoice">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <t t-set="information_block" t-attf-class="col-6" id="ait_ir_information_block_t_set">
+                <div class="address_box" style="width:418px; font-size: 11px !important;" id="ait_ir_report_invoice_address_box_1">
+                    <strong>Recipient</strong>
+                    <t id="ait_ir_t_address_box">
+                        <strong>
+                            <div style="padding-top:5px;"
+                                t-field="doc.partner_id"
+                                t-options='{"widget": "contact", "fields": ["name"], "no_marker": True, "phone_icons": True}'
+                                id="ait_ir_address_box_div_partner_id"
+                            />
+                        </strong>
+                        <div
+                            t-field="doc.partner_id"
+                            t-options='{"widget": "contact", "fields": ["address"], "no_marker": True, "phone_icons": True}'
+                            id="ait_ir_address_box_div_partner_id_2"
+                        />
+                        <t t-if="doc.partner_id.commercial_partner_id.vat" id="ait_ir_address_box_t_if">
+                            <div t-field="doc.partner_id.commercial_partner_id.vat" id="ait_ir_address_box_div_vat"/>
+                        </t>
+                        <t t-elif="doc.partner_id.commercial_partner_id.fiscalcode" id="ait_ir_address_box_t_elif">
+                            <div t-field="doc.partner_id.commercial_partner_id.fiscalcode" id="ait_ir_address_box_div_fiscal_code"/>
+                        </t>
+                    </t>
+                </div>
+            </t>
+            <t t-set="address" t-attf-class="col-6" id="ait_ir_address_t_set">
+                <div class="address_box" style="margin-left:-65px; width:418px; font-size: 11px !important;" 
+                    id="ait_ir_report_invoice_address_box_2">
+                    <strong>Destination</strong>
+                    <t t-if="doc.partner_shipping_id">
+                        <strong>
+                            <div style="padding-top:5px;"
+                                t-field="doc.partner_shipping_id"
+                                t-options='{"widget": "contact", "fields": ["name"], "no_marker": True, "phone_icons": True}'
+                                id="ait_ir_address_box_div_partner_shipping_id"
+                                />
+                        </strong>
+                        <div
+                            t-field="doc.partner_shipping_id"
+                            t-options='{"widget": "contact", "fields": ["address"], "no_marker": True, "phone_icons": True}'
+                            id="ait_ir_address_box_div_partner_shipping_id_2"
+                            />  
+                        <t t-if="doc.partner_id.commercial_partner_id.vat" id="ait_ir_address_box_t_if_2">
+                            <div t-field="doc.partner_id.commercial_partner_id.vat" id="ait_ir_address_box_div_vat_2"/>
+                        </t>
+                        <t t-elif="doc.partner_id.commercial_partner_id.fiscalcode" id="ait_ir_address_box_t_elif_2">
+                            <div t-field="doc.partner_id.commercial_partner_id.fiscalcode" id="ait_ir_address_box_div_fiscal_code_2"/>
+                        </t>                    
+                    </t>
+                </div>
+            </t>
+            <div class="page" style="font-size: 11px !important;" id="ait_ir_page">
+                <div class="oe_structure" id="ait_ir_oe_structure_1"/>
+                <div id="ait_ir_document_title">
+                    <span>Invoice</span>
+                    <span t-field="doc.display_name"/>
+                    <span t-if="doc.date"> - </span>
+                    <span t-field="doc.date" t-options='{"format": "dd/MM/yyyy"}'/>
+                </div>
+                <div id="before_lines"/>
+                <!-- before line comments -->
+                <div id="ait_ir_before_lines_comments">
+                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'before_lines')"
+                    t-as="comment_template_top" id="before_lines_comment">
+                        <div id="ait_ir_before_lines_comment_div">
+                            <t t-if="comment_template_top.page_break_before" id="ait_ir_before_lines_comment_pb_before">
+                                <p style="page-break-before: always"/>
+                            </t>
+                            <div t-raw="doc.render_comment(comment_template_top)" id="ait_ir_before_lines_comment_comment"/>
+                            <t t-if="comment_template_top.page_break_after" id="ait_ir_before_lines_comment_pb_after">
+                                <p style="page-break-after: always"/>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+
+                <div id="ait_ir_payment_div">
+                    <table class="table table-borderless" id="ait_ir_payment_table">
+                        <thead id="ait_ir_payment_thead">
+                            <th style="width:66%;" id="ait_ir_payment_th_payment_terms">
+                                Payment terms
+                            </th>
+                            <th style="width:34%;" id="ait_ir_payment_th_vat">
+                                VAT code
+                            </th>
+                        </thead>
+                        <tbody id="ait_ir_payment_tbody">
+                            <tr id="ait_ir_payment_tr">
+                                <td id="ait_ir_payment_td_1">
+                                    <t t-if="doc.invoice_payment_term_id and doc.invoice_date_due" id="ait_ir_payment_p_terms_if">
+                                        <span t-field="doc.invoice_payment_term_id.name" class="m-0"/> - <span t-field="doc.invoice_date_due" class="m-0"/>
+                                    </t>
+                                    <t t-elif="doc.invoice_payment_term_id and not doc.invoice_date_due" id="ait_ir_payment_p_terms_elif">
+                                        <span t-field="doc.invoice_payment_term_id.name" class="m-0" />
+                                    </t>
+                                    <t t-elif="doc.invoice_date_due and not doc.invoice_payment_term_id" id="ait_ir_payment_invoice_date">
+                                        <span t-field="doc.invoice_date_due" class="m-0" />
+                                    </t>
+                                </td>
+                                <td id="ait_ir_payment_td_2">
+                                    <span t-field="doc.partner_id.vat" class="m-0" id="ait_ir_payment_span_vat"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-borderless" id="ait_ir_transport_table">
+                        <thead id="ait_ir_transport_thead">
+                            <th style="width:33%;" id="ait_ir_transport_th_bank">
+                                Bank
+                            </th>
+                            <th style="width:33%;" id="ait_ir_transport_th_transport">
+                                Transport
+                            </th>
+                            <th style="width:34%;" id="ait_ir_transport_th_delivery">
+                                Delivery
+                            </th>
+                        </thead>
+                        <tbody id="ait_ir_transport_tbody">
+                            <tr id="ait_ir_transport_tr">
+                                <td id="ait_ir_transport_td_1">
+                                    <span t-field="doc.partner_bank_id" class="m-0" id="ait_ir_transport_partner_bank"/><span style="display: inline-block; min-height: 10px;"/>           
+                                </td>
+                                <td id="ait_ir_transport_td_2">
+                                    <t t-if="doc.delivery_transport_method_id.is_vector == True and doc.carrier_id" id="ait_ir_transport_t_if_carrier">
+                                        <span>Vettore: </span><span t-field="doc.carrier_id" class="m-0" />        
+                                    </t>
+                                    <t t-else="" id="ait_ir_transport_t_else_transport_method">
+                                        <span t-field="doc.delivery_transport_method_id" class="m-0" id="ait_ir_transport_span_transport_method"/>                
+                                    </t>
+                                </td>
+
+                                <td id="ait_ir_transport_td_3">
+                                    <span t-field="doc.delivery_transport_condition_id" id="ait_ir_transport_t_else_transport_condition"/>            
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="ait_ir_line_div">
+                    <table id="ait_ir_line_table" class="table table-borderless">
+                        <thead id="ait_ir_line_thead">
+                            <tr id="ait_ir_line_thead_tr">
+                                <t t-set="colspan" t-value="8" style="width:60px;" id="ait_ir_line_t_set"/>
+                                <th class="text-left" style="width:20%" id="ait_ir_line_th_code">
+                                    Code
+                                </th>
+                                <th class="text-left" style="width:30%" id="ait_ir_line_th_product">
+                                    Product
+                                </th>
+                                <th class="text-right" style="width:10%" id="ait_ir_line_th_uom">
+                                    UoM
+                                </th>
+                                <th class="text-right" style="width:10%" id="ait_ir_line_th_quantity">
+                                    Quantity
+                                </th>
+                                <th class="text-right" style="width:10%" id="ait_ir_line_th_net_value">
+                                    Net Value
+                                </th>
+                                <th class="text-right" style="width:10%" id="ait_ir_line_th_discount">
+                                    Discount
+                                </th>
+                                <th class="text-right" style="width:10%" id="ait_ir_line_th_vat">
+                                    VAT
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="sale_tbody" id="ait_ir_line_tbody">
+                            <t t-foreach="doc.invoice_line_ids" t-as="line" id="ait_ir_line_t_foreach">
+                                <tr
+                                    t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''"
+                                    id="ait_ir_line_tbody_tr"
+                                    >
+                                    <t t-if="line.display_type=='product'" id="st_ir_line_t_if">
+                                        <td id="ait_ir_line_td_code_ref">
+                                            <span t-field="line.product_id.default_code"/><br/>
+                                            <i><span t-field="line.pricelist_item_client_ref"/></i>
+                                        </td>
+                                        <td id="ait_ir_line_td_product_name">
+                                            <span t-field="line.product_id.name" />
+                                        </td>
+                                        <td class="text-right" id="ait_ir_line_td_product_uom">
+                                            <span t-field="line.product_uom_id" />
+                                        </td>
+                                        <td class="text-right" id="ait_ir_line_td_product_qty">
+                                            <span t-field="line.quantity" />
+                                        </td>
+                                        <td class="text-right" id="ait_ir_line_td_price_unit">
+                                            <span t-field="line.price_unit" />
+                                        </td>
+                                        <td class="text-right" id="ait_ir_line_td_discount">
+                                            <span t-field="line.discount" />
+                                        </td>
+                                        <td class="text-right" id="ait_ir_line_td_taxes">
+                                            <span t-field="line.tax_ids" />
+                                        </td>
+                                    </t>
+                                    <t t-else="" id="ait_ir_line_t_else">
+                                        <td colspan="6" id="ait_ir_line_t_else_td">
+                                            <span t-field="line.name" />
+                                        </td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="after_lines"/>
+                <!-- after line comments -->
+                <div id="ait_ir_after_lines_comments">
+                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'after_lines')"
+                        t-as="comment_template_bottom" id="after_lines_comment">
+                        <div id="ait_ir_after_lines_comment_div">
+                            <t t-if="comment_template_bottom.page_break_before" id="ait_ir_after_lines_comment_pb_before">
+                                <p style="page-break-before: always"/>
+                            </t>
+                            <div t-raw="doc.render_comment(comment_template_bottom)" id="ait_ir_after_lines_comment_comment"/>
+                            <t t-if="comment_template_bottom.page_break_after" id="ait_ir_after_lines_comment_pb_after">
+                                <p style="page-break-after: always"/>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+                <div class="oe_structure" id="ait_ir_oe_structure_2"/>
+            </div>
+        </t>
+    </template>
+
+
+    <!--Account Report -->
+    <template id="report_account_move">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="ait_report_invoice.ait_ir_report_invoice" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

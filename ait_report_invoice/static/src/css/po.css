@@ -1,0 +1,129 @@
+.address_box {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    padding: 7px;
+    min-height: 120px;
+}
+.address_box strong {
+    color: gray!important;
+}
+.address_box strong div{
+    font-size: 110%;
+    color: black!important;
+}
+
+#ait_ir_document_title {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    padding: 7px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 150%;
+    font-weight: bold;
+    text-align: center;
+}
+#delivery_data_information {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#ait_ir_payment_table {
+    margin-bottom: 0px;
+    /*border-radius: 5px;*/
+}
+#ait_ir_payment_table thead {
+    background-color: whitesmoke;
+}
+#ait_ir_payment_table thead th {
+    border: 1px solid whitesmoke !important;
+    padding: 7px;
+    font-size:90%;
+    text-transform: uppercase;
+}
+#ait_ir_payment_table tbody tr td {
+    border-right: 1px solid whitesmoke !important;
+    padding: 7px;
+}
+
+#ait_ir_transport_table {
+    margin-bottom: 0px;
+    /*border-radius: 5px;*/
+}
+#ait_ir_transport_table thead {
+    background-color: whitesmoke;
+}
+#ait_ir_transport_table thead th {
+    border: 1px solid whitesmoke !important;
+    padding: 7px;
+    font-size:90%;
+    text-transform: uppercase;
+}
+#ait_ir_transport_table tbody tr td {
+    border-right: 1px solid whitesmoke !important;
+    padding: 7px;
+}
+
+
+#ait_ir_line_table {
+    margin-bottom: 0px;
+    /*border-radius: 5px;*/
+}
+#ait_ir_line_table thead {
+    background-color: whitesmoke;
+}
+#ait_ir_line_table thead th {
+    border: 1px solid whitesmoke !important;
+    padding: 7px;
+    font-size:90%;
+    text-transform: uppercase;
+}
+#ait_ir_line_table tbody tr td {
+    border-right: 1px solid whitesmoke !important;
+    padding: 7px;
+}
+
+#dn_info {
+    margin-bottom: 0px;
+    /*border-radius: 5px;*/
+}
+#dn_info thead {
+    background-color: whitesmoke;
+}
+#dn_info thead th {
+    border: 1px solid whitesmoke !important;
+    padding: 7px;
+    font-size:90%;
+    text-transform: uppercase;
+}
+#dn_info tbody tr td {
+    border-right: 1px solid whitesmoke !important;
+    padding: 7px;
+}
+
+#ait_ir_footer_shipping_info {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    margin-bottom: 10px;
+}
+#ait_ir_payment_div {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    margin-bottom: 10px;
+}
+#ait_ir_line_div {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    margin-bottom: 10px;
+}
+#dn_info_div {
+    border: 1px solid lightgray;
+    /*border-radius: 5px;*/
+    margin-bottom: 10px;
+}
+.note_th {
+    width: 400px;
+}
