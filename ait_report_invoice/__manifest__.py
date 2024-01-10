@@ -4,7 +4,7 @@
     'author': "Aion Tech",
     'website': "https://aion-tech.it",
     'category': 'Aion Tech',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'license': 'AGPL-3',
     'depends': [
         'stock',
@@ -20,6 +20,7 @@
         "reports/report.xml",
         "reports/report_invoice.xml",
         "views/account_move.xml",
+        "views/res_config_settings.xml",
     ],
     'assets': {
         'web.report_assets_common': [

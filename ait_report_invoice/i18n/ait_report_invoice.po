@@ -1,0 +1,184 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* ait_report_invoice
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e-20231222\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-08 16:55+0000\n"
+"PO-Revision-Date: 2024-01-08 16:55+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "<span>Invoice</span>"
+msgstr "<span>Fattura</span>"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "<span>Vector: </span>"
+msgstr "<span>Vettore: </span>"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "<strong>Destination</strong>"
+msgstr "<strong>Destinazione</strong>"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "<strong>Recipient</strong>"
+msgstr "<strong>Destinazione</strong>"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Bank"
+msgstr "Banca"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Code"
+msgstr "Codice"
+
+#. module: ait_report_invoice
+#: model:ir.model.fields,field_description:ait_report_invoice.field_account_bank_statement_line__compute_pricelist_client_ref_on_lines
+#: model:ir.model.fields,field_description:ait_report_invoice.field_account_move__compute_pricelist_client_ref_on_lines
+#: model:ir.model.fields,field_description:ait_report_invoice.field_account_payment__compute_pricelist_client_ref_on_lines
+msgid "Compute Pricelist Client Ref On Lines"
+msgstr "Calcola il riferimento cliente del listino prezzi sulle righe"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Delivery"
+msgstr "Consegna"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Discount"
+msgstr "Sconto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
+msgid "Due Value"
+msgstr "Importo dovuto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
+msgid "Due date"
+msgstr "Data di scadenza"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
+msgid "Gross Value"
+msgstr "Importo lordo"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Gross weight"
+msgstr "Peso lordo"
+
+#. module: ait_report_invoice
+#: model:ir.model,name:ait_report_invoice.model_report_ait_report_invoice_report_account_move
+msgid "Invoice Report"
+msgstr "Report fattura"
+
+#. module: ait_report_invoice
+#: model:ir.model,name:ait_report_invoice.model_account_move
+msgid "Journal Entry"
+msgstr "Voce di registro"
+
+#. module: ait_report_invoice
+#: model:ir.model,name:ait_report_invoice.model_account_move_line
+msgid "Journal Item"
+msgstr "Importo netto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
+msgid "Net Value"
+msgstr ""
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Net weight"
+msgstr "Peso netto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Packages"
+msgstr "Pacchi"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Payment terms"
+msgstr "Termini di pagamento"
+
+#. module: ait_report_invoice
+#: model:ir.model.fields,field_description:ait_report_invoice.field_account_move_line__pricelist_item_client_ref
+msgid "Pricelist Client Ref."
+msgstr "Riferimento cliente del listino prezzi"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Product"
+msgstr "Prodotto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Quantity"
+msgstr "Quantità"
+
+#. module: ait_report_invoice
+#: model:ir.model.fields,field_description:ait_report_invoice.field_res_config_settings__shipping_info_on_invoice
+msgid "Show shipping info on invoice reports"
+msgstr "Mostra le informazioni di spedizione nei report delle fatture"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_report_invoice_res_setting_form
+msgid "Shows the shipping information on the customer invoice reports."
+msgstr "Mostra le informazioni di spedizione nei report delle fatture dei clienti."
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Transport"
+msgstr "Trasporto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Transport date"
+msgstr "Data di trasporto"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "UoM"
+msgstr "UdM"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "VAT"
+msgstr "IVA"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "VAT code"
+msgstr "Codice IVA"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
+msgid "Vat Value"
+msgstr "Importo IVA"
+
+#. module: ait_report_invoice
+#: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
+msgid "Volume"
+msgstr "Volume"
+
+#. module: ait_report_invoice
+#: model:ir.model,name:ait_report_invoice.model_res_config_settings
+msgid "res.config.settings"
+msgstr ""

@@ -14,4 +14,5 @@ class InvoiceReport(models.AbstractModel):
             'doc_ids': docs.ids,
             'doc_model': 'account.move',
             'docs': docs,
+            'shipping_info_on_invoice': self.env['ir.config_parameter'].sudo().get_param('ait_report_invoice.shipping_info_on_invoice'),
         }

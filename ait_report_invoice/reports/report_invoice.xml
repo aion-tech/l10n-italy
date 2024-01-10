@@ -15,44 +15,6 @@
         <div t-attf-class="footer o_clean_footer o_company_#{doc.company_id}_layout" 
         style="font-size: 11px !important;" id="ait_ir_footer_div">
             <div id="ait_ir_footer_shipping_info">
-                <table class="table table-borderless" id="ait_ir_dn_info_table">
-                    <thead id="ait_ir_dn_info_thead_1">
-                        <th style="width:20%;" id="ait_ir_dn_info_th_gross_weight">
-                            Gross weight
-                        </th>
-                        <th style="width:20%;" id="ait_ir_dn_info_th_net_weight">
-                            Net weight
-                        </th>
-                        <th style="width:20%;" id="ait_ir_dn_info_th_volume">
-                            Volume
-                        </th>
-                        <th style="width:20%;" id="ait_ir_dn_info_th_packages">
-                            Packages
-                        </th>
-                        <th style="width:20%;" id="ait_ir_dn_info_th_transport_date">
-                            Transport date
-                        </th>
-                    </thead>
-                    <tbody id="ait_ir_dn_info_body_1">
-                        <tr id="ait_ir_dn_info_tr_1">
-                            <td id="ait_ir_dn_info_td_gross_weight">
-                                <span t-field="doc.delivery_gross_weight" class="m-0" />                                
-                            </td>
-                            <td id="ait_ir_dn_info_td_net_weight">
-                                <span t-field="doc.delivery_net_weight" class="m-0" />
-                            </td>
-                            <td id="ait_ir_dn_info_td_volume">
-                                <span t-field="doc.delivery_volume" class="m-0" />
-                            </td>
-                            <td id="ait_ir_dn_info_td_packages">
-                                <span t-field="doc.delivery_packages" class="m-0" />
-                            </td>
-                            <td id="ait_ir_dn_info_td_transport_date">
-                                <span t-field="doc.delivery_transport_datetime" class="m-0" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
                 <table class="table table-borderless" id="ait_ir_values_table">
                     <thead id="ait_ir_values_thead_1">
                         <th style="width:20%;" id="ait_ir_values_th_due_date">
@@ -183,16 +145,22 @@
                 <div id="ait_ir_payment_div">
                     <table class="table table-borderless" id="ait_ir_payment_table">
                         <thead id="ait_ir_payment_thead">
-                            <th style="width:66%;" id="ait_ir_payment_th_payment_terms">
+                            <th style="width:20%;" id="ait_ir_payment_th_vat">
+                                VAT code
+                            </th>
+                            <th style="width:60%;" id="ait_ir_payment_th_payment_terms">
                                 Payment terms
                             </th>
-                            <th style="width:34%;" id="ait_ir_payment_th_vat">
-                                VAT code
+                            <th style="width:20%;" id="ait_ir_transport_th_bank">
+                                Bank
                             </th>
                         </thead>
                         <tbody id="ait_ir_payment_tbody">
                             <tr id="ait_ir_payment_tr">
                                 <td id="ait_ir_payment_td_1">
+                                    <span t-field="doc.partner_id.vat" class="m-0" id="ait_ir_payment_span_vat"/>
+                                </td>
+                                <td id="ait_ir_payment_td_2">
                                     <t t-if="doc.invoice_payment_term_id and doc.invoice_date_due" id="ait_ir_payment_p_terms_if">
                                         <span t-field="doc.invoice_payment_term_id.name" class="m-0"/> - <span t-field="doc.invoice_date_due" class="m-0"/>
                                     </t>
@@ -203,44 +171,69 @@
                                         <span t-field="doc.invoice_date_due" class="m-0" />
                                     </t>
                                 </td>
-                                <td id="ait_ir_payment_td_2">
-                                    <span t-field="doc.partner_id.vat" class="m-0" id="ait_ir_payment_span_vat"/>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table class="table table-borderless" id="ait_ir_transport_table">
-                        <thead id="ait_ir_transport_thead">
-                            <th style="width:33%;" id="ait_ir_transport_th_bank">
-                                Bank
-                            </th>
-                            <th style="width:33%;" id="ait_ir_transport_th_transport">
-                                Transport
-                            </th>
-                            <th style="width:34%;" id="ait_ir_transport_th_delivery">
-                                Delivery
-                            </th>
-                        </thead>
-                        <tbody id="ait_ir_transport_tbody">
-                            <tr id="ait_ir_transport_tr">
-                                <td id="ait_ir_transport_td_1">
+                                <td id="ait_ir_payment_td_3">
                                     <span t-field="doc.partner_bank_id" class="m-0" id="ait_ir_transport_partner_bank"/><span style="display: inline-block; min-height: 10px;"/>           
                                 </td>
-                                <td id="ait_ir_transport_td_2">
-                                    <t t-if="doc.delivery_transport_method_id.is_vector == True and doc.carrier_id" id="ait_ir_transport_t_if_carrier">
-                                        <span>Vettore: </span><span t-field="doc.carrier_id" class="m-0" />        
-                                    </t>
-                                    <t t-else="" id="ait_ir_transport_t_else_transport_method">
-                                        <span t-field="doc.delivery_transport_method_id" class="m-0" id="ait_ir_transport_span_transport_method"/>                
-                                    </t>
-                                </td>
-
-                                <td id="ait_ir_transport_td_3">
-                                    <span t-field="doc.delivery_transport_condition_id" id="ait_ir_transport_t_else_transport_condition"/>            
-                                </td>
                             </tr>
                         </tbody>
                     </table>
+                    <t t-if="shipping_info_on_invoice">
+                        <table class="table table-borderless" id="ait_ir_transport_table">
+                            <thead id="ait_ir_transport_thead">
+                                <th style="width:21%;" id="ait_ir_transport_th_transport">
+                                    Transport
+                                </th>
+                                <th style="width:17%;" id="ait_ir_transport_th_delivery">
+                                    Delivery
+                                </th>
+                                <th style="width:12%;" id="ait_ir_dn_info_th_transport_date">
+                                    Transport date
+                                </th>
+                                <th style="width:12;" id="ait_ir_dn_info_th_packages">
+                                    Packages
+                                </th>
+                                <th style="width:12%;" id="ait_ir_dn_info_th_gross_weight">
+                                    Gross weight
+                                </th>
+                                <th style="width:12%;" id="ait_ir_dn_info_th_net_weight">
+                                    Net weight
+                                </th>
+                                <th style="width:12%;" id="ait_ir_dn_info_th_volume">
+                                    Volume
+                                </th>
+                            </thead>
+                            <tbody id="ait_ir_transport_tbody">
+                                <tr id="ait_ir_transport_tr">
+                                    <td id="ait_ir_transport_td_2">
+                                        <t t-if="doc.delivery_transport_method_id.is_vector == True and doc.carrier_id" id="ait_ir_transport_t_if_carrier">
+                                            <span>Vector: </span><span t-field="doc.carrier_id" class="m-0" />        
+                                        </t>
+                                        <t t-else="" id="ait_ir_transport_t_else_transport_method">
+                                            <span t-field="doc.delivery_transport_method_id" class="m-0" id="ait_ir_transport_span_transport_method"/>                
+                                        </t>
+                                    </td>
+                                    <td id="ait_ir_transport_td_3">
+                                        <span t-field="doc.delivery_transport_condition_id" id="ait_ir_transport_t_else_transport_condition"/>            
+                                    </td>
+                                    <td id="ait_ir_dn_info_td_transport_date">
+                                        <t t-esc="doc.delivery_transport_datetime" t-options='{"widget": "date", "date_format": "dd/MM/yyyy"}'/>
+                                    </td>
+                                    <td id="ait_ir_dn_info_td_packages">
+                                        <span t-field="doc.delivery_packages" class="m-0" />
+                                    </td>
+                                    <td id="ait_ir_dn_info_td_gross_weight">
+                                        <span t-field="doc.delivery_gross_weight" class="m-0" />                                
+                                    </td>
+                                    <td id="ait_ir_dn_info_td_net_weight">
+                                        <span t-field="doc.delivery_net_weight" class="m-0" />
+                                    </td>
+                                    <td id="ait_ir_dn_info_td_volume">
+                                        <span t-field="doc.delivery_volume" class="m-0" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </t>
                 </div>
                 <div id="ait_ir_line_div">
                     <table id="ait_ir_line_table" class="table table-borderless">
