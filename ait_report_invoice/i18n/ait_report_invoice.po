@@ -101,7 +101,7 @@ msgstr "Importo netto"
 #: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
 #: model_terms:ir.ui.view,arch_db:ait_report_invoice.external_layout_invoice
 msgid "Net Value"
-msgstr ""
+msgstr "Importo netto"
 
 #. module: ait_report_invoice
 #: model_terms:ir.ui.view,arch_db:ait_report_invoice.ait_ir_report_invoice
