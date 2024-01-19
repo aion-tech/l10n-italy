@@ -57,7 +57,7 @@ class FatturapaAttachmentIn(models.Model):
 
         documents = bluenext.list_documents(
             registered=False,
-            registered_type="Undefined",
+            registered_type="SoftwareHouseDownloaded",
             category="Passive",
             recipient={
                 "CountryCode": country_code,
@@ -70,14 +70,14 @@ class FatturapaAttachmentIn(models.Model):
 
         for document in documents.get("file", []):
             archive_id = document["ArchiveId"]
-            fatturapa_attachment_out_id = self.search(
+            fatturapa_attachment_in_id = self.search(
                 [
                     "|",
                     ("bluenext_archive_id", "=", archive_id),
                     ("bluenext_filename", "=", document["FileName"]),
                 ]
             )
-            if fatturapa_attachment_out_id:
+            if fatturapa_attachment_in_id:
                 continue
 
             document_vals = bluenext.get_document(
@@ -86,7 +86,7 @@ class FatturapaAttachmentIn(models.Model):
                 2,  # 0: xml, 1: p7m, 2: P7mOrXml
             )
 
-            fatturapa_attachment_out_vals = {
+            fatturapa_attachment_in_vals = {
                 "company_id": company_id.id,
                 "datas": document_vals["Content"],
                 "name": document_vals["Filename"],
@@ -102,7 +102,7 @@ class FatturapaAttachmentIn(models.Model):
                     dt_format,
                 ).replace(tzinfo=None),
             }
-            invoice_ids |= self.create(fatturapa_attachment_out_vals)
+            invoice_ids |= self.create(fatturapa_attachment_in_vals)
 
         self._set_bluenext_last_download_date(last_download)
         return invoice_ids
