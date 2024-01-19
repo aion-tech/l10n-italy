@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- <record -->
-    <!-- id="bluenext_fetch_invoice_in" -->
-    <!-- model="ir.cron"> -->
-    <!--     <field name="name">Bluenext: Import bills</field> -->
-    <!--     <field name="interval_number">1</field> -->
-    <!--     <field name="interval_type">hours</field> -->
-    <!--     <field name="numbercall">-1</field> -->
-    <!--     <field -->
-    <!--     name="doall" -->
-    <!--     eval="False" /> -->
-    <!--     <field -->
-    <!--     name="model_id" -->
-    <!--     ref="model_fatturapa_attachment_in" /> -->
-    <!--     <field name="code">model.get_bluenext_invoices_cron()</field> -->
-    <!--     <field name="state">code</field> -->
-    <!-- </record> -->
+    <record
+    id="bluenext_fetch_invoice_in"
+    model="ir.cron">
+        <field name="name">Bluenext: Import bills</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field
+        name="doall"
+        eval="False" />
+        <field
+        name="model_id"
+        ref="model_fatturapa_attachment_in" />
+        <field name="code">model.bluenext_download_invoices()</field>
+        <field name="state">code</field>
+    </record>
     <record
     id="bluenext_fetch_invoice_out_state"
     model="ir.cron">

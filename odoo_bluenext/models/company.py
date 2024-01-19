@@ -33,7 +33,6 @@ class ResCompany(models.Model):
     bluenext_last_download_date = fields.Datetime(
         string="Bluenext Last eBill Download Date",
         help="Bluenext Last eBill Download Date",
-        readonly=True,
     )
     bluenext_state_map_ids = fields.Many2many(
         comodel_name="bluenext.state.map",
