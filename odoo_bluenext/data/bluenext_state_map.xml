@@ -101,7 +101,7 @@
         id="bluenext_state_map_16"
         model="bluenext.state.map">
             <field name="bluenext_invoice_state">16</field>
-            <field name="odoo_attachment_out_state">sent</field>
+            <field name="odoo_attachment_out_state">validated</field>
         </record>
         <record
         id="bluenext_state_map_17"
