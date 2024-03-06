@@ -45,6 +45,16 @@ class FatturapaAttachmentIn(models.Model):
         return len(invoice_ids)
 
     @api.model
+    def bluenext_download_invoices_cron(self):
+        company_ids = (
+            self.env["res.company"]
+            .search([])
+            .filtered(lambda company: company._has_complete_bluenext_conf())
+        )
+        for company_id in company_ids:
+            self.with_company(company_id).bluenext_download_invoices()
+
+    @api.model
     def bluenext_download_invoices(self):
         company_id = self.company_id or self.env.company
         bluenext = company_id._init_bluenext()

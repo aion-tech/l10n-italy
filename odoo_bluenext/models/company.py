@@ -60,8 +60,26 @@ class ResCompany(models.Model):
         else:
             return self.bluenext_access_token, self.bluenext_access_token_expiration
 
+    def _has_complete_bluenext_conf(self):
+        self.ensure_one()
+        return all(
+            [
+                self.bluenext_base_url,
+                self.bluenext_username,
+                self.bluenext_password,
+            ]
+        )
+
+    def _check_bluenext_conf(self):
+        self.ensure_one()
+        if not self._has_complete_bluenext_conf():
+            raise models.ValidationError(
+                _("Incomplete bluenext configuration on company %s.") % self.name
+            )
+
     def _init_bluenext(self):
         self.ensure_one()
+        self._check_bluenext_conf()
         token, expiration = self._get_bluenext_access_token()
         bluenext = Bluenext(
             url=self.bluenext_base_url,
