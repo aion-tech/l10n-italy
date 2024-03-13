@@ -81,11 +81,7 @@ class FatturapaAttachmentIn(models.Model):
         for document in documents.get("file", []):
             archive_id = document["ArchiveId"]
             fatturapa_attachment_in_id = self.search(
-                [
-                    "|",
-                    ("bluenext_archive_id", "=", archive_id),
-                    ("bluenext_filename", "=", document["FileName"]),
-                ]
+                [("bluenext_filename", "=", document["FileName"])]
             )
             if fatturapa_attachment_in_id:
                 continue
