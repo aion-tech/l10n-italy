@@ -754,13 +754,21 @@ class ReportDepreciationLineByYear(models.TransientModel):
             else:
                 lines_grouped[dep] += line
 
-        ctx = dict(force_prorata=True)
+        ctx = dict(force_prorata=False)
         for lines in lines_grouped.values():
             lines = lines.sorted()
             last_line = lines[-1]
             for line in lines - last_line:
+                dep_id = line.report_depreciation_id.depreciation_id
+                if dep_id.pro_rata_temporis:
+                    ctx = dict(force_prorata=True)
                 line.generate_previsional_line_single()
+                ctx = dict(force_prorata=False)
+            dep_id = last_line.report_depreciation_id.depreciation_id
+            if dep_id.pro_rata_temporis:
+                ctx = dict(force_prorata=True)
             last_line.with_context(**ctx).generate_previsional_line_single()
+            ctx = dict(force_prorata=False)
 
     def generate_previsional_line_single(self):
         self.ensure_one()
