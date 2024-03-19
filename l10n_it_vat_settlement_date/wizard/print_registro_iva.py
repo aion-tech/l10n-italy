@@ -7,21 +7,7 @@ from odoo import models
 class WizardRegistroIva(models.TransientModel):
     _inherit = "wizard.registro.iva"
 
-    def _get_move_ids(self, wizard):
-        moves = self.env["account.move"].search(
-            [
-                "|",
-                "&",
-                ("date_vat_settlement", ">=", self.from_date),
-                ("date_vat_settlement", "<=", self.to_date),
-                "&",
-                ("date_vat_settlement", "=", None),
-                "&",
-                ("date", "<=", self.to_date),
-                ("date", ">=", self.from_date),
-                ("journal_id", "in", [j.id for j in self.journal_ids]),
-                ("state", "=", "posted"),
-            ],
-            order="date, name",
-        )
-        return moves.ids
+    def _get_move_ids_domain(self):
+        domain = super()._get_move_ids_domain()
+        domain = self.env["account.tax"]._inject_vat_settlement_date_domain(domain)
+        return domain
