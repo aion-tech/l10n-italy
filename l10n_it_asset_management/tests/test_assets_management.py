@@ -184,7 +184,7 @@ class TestAssets(TransactionCase):
         return wiz
 
     def _depreciate_asset(self, asset, date_dep, period="year"):
-        wiz = self._depreciate_asset_wizard(asset, date_dep, period)
+        wiz = self._depreciate_asset_wizard(asset, date_dep, period=period)
         wiz.do_generate()
 
     def _create_purchase_invoice(self, invoice_date, tax_ids=False, amount=7000):
