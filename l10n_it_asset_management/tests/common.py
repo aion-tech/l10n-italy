@@ -178,14 +178,28 @@ class Common(TransactionCase):
         )
         return asset
 
-    def _depreciate_asset(self, asset, date_dep):
+    def _depreciate_asset_wizard(
+        self, asset, date_dep, period="year", period_count=None
+    ):
         wiz_vals = asset.with_context(
             **{"allow_reload_window": True}
         ).launch_wizard_generate_depreciations()
         wiz = (
             self.env["wizard.asset.generate.depreciation"]
             .with_context(**wiz_vals["context"])
-            .create({"date_dep": date_dep})
+            .create(
+                {
+                    "date_dep": date_dep,
+                    "period": period,
+                    "period_count": period_count,
+                }
+            )
+        )
+        return wiz
+
+    def _depreciate_asset(self, asset, date_dep, period="year", period_count=None):
+        wiz = self._depreciate_asset_wizard(
+            asset, date_dep, period=period, period_count=period_count
         )
         wiz.do_generate()
 
