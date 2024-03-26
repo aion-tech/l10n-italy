@@ -3,8 +3,11 @@
 
 import datetime
 
+from dateutil.relativedelta import relativedelta
+
 from odoo import Command
 from odoo.tests import Form, tagged
+from odoo.tools import format_date
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -16,6 +19,7 @@ class TestVATRegistry(AccountTestInvoicingCommon):
         super().setUpClass(chart_template_ref=chart_template_ref)
         cls.supplier_bill = cls.init_invoice(
             "in_invoice",
+            invoice_date=datetime.date(2020, 6, 15),
             amounts=[
                 100,
             ],
@@ -24,8 +28,8 @@ class TestVATRegistry(AccountTestInvoicingCommon):
         cls.supplier_journal = cls.company_data["default_journal_purchase"]
         cls.supplier_tax_registry = cls.env["account.tax.registry"].create(
             {
-                "name": "Sales",
-                "layout_type": "customer",
+                "name": "Supplier",
+                "layout_type": "supplier",
                 "journal_ids": [
                     Command.set(cls.supplier_journal.ids),
                 ],
@@ -57,29 +61,27 @@ class TestVATRegistry(AccountTestInvoicingCommon):
         return html
 
     def test_report(self):
-        """The settlement date decides whether a move is in the report."""
-        # Arrange: a date range and a bill out of that range
+        """The settlement date is shown in the report."""
+        # Arrange: a date range and a bill in that range
         bill = self.supplier_bill
-        settlement_date = bill.l10n_it_vat_settlement_date
+        accounting_date = bill.date
+        settlement_date = bill.date + relativedelta(years=1)
+        bill.l10n_it_vat_settlement_date = settlement_date
         tax_registry = self.supplier_tax_registry
         from_date = datetime.date(2020, 1, 1)
         to_date = datetime.date(2020, 12, 31)
-        # pre-condition: the report does not contain the bill
-        self.assertFalse(from_date <= settlement_date <= to_date)
+        # pre-condition: the report contains the bill
+        self.assertTrue(from_date <= accounting_date <= to_date)
+        self.assertNotEqual(accounting_date, settlement_date)
+
+        # Act
         html = self._get_report(
             from_date,
             to_date,
             tax_registry,
         )
-        self.assertNotIn(bill.name, html.decode())
 
-        # Act: move the settlement date in the report date range
-        bill.l10n_it_vat_settlement_date = from_date
-
-        # Assert: the report now contains the bill
-        html = self._get_report(
-            from_date,
-            to_date,
-            tax_registry,
-        )
-        self.assertIn(bill.name, html.decode())
+        # Assert
+        report_content = html.decode()
+        self.assertIn(bill.name, report_content)
+        self.assertIn(format_date(self.env, settlement_date), report_content)

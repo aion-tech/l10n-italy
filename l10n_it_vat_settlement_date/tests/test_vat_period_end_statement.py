@@ -36,11 +36,6 @@ class TestVATPeriodEndStatement(TestVATStatementCommon):
             current_period.get_domain("l10n_it_vat_settlement_date")
         )
         self.assertNotIn(bill, period_settled_moves)
-        tax_context = {
-            "from_date": current_period.date_start,
-            "to_date": current_period.date_end,
-        }
-        self.assertFalse(tax.with_context(**tax_context).has_moves)
 
         # Act: move the settlement date in the statement period
         bill.l10n_it_vat_settlement_date = current_period.date_end + relativedelta(
@@ -52,21 +47,6 @@ class TestVATPeriodEndStatement(TestVATStatementCommon):
             current_period.get_domain("l10n_it_vat_settlement_date")
         )
         self.assertIn(bill, period_settled_moves)
-        bill.line_ids.flush_recordset(
-            fnames=[
-                "l10n_it_vat_settlement_date",
-            ],
-        )
-        self.assertFalse(
-            tax.with_context(**tax_context).has_moves,
-            "This assertion and the cache invalidation can be removed",
-        )
-        tax.invalidate_recordset(
-            fnames=[
-                "has_moves",
-            ],
-        )
-        self.assertTrue(tax.with_context(**tax_context).has_moves)
 
         statement.compute_amounts()
         new_authority_vat_amount = statement.authority_vat_amount

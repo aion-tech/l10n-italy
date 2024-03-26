@@ -2,22 +2,12 @@
 # Copyright 2024 Simone Rubino - Aion Tech
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-import re
-
 from odoo import models
 from odoo.osv import expression
 
 
 class AccountTax(models.Model):
     _inherit = "account.tax"
-
-    def _account_tax_ids_with_moves_query(self):
-        query, params = super()._account_tax_ids_with_moves_query()
-        # Substitute the `date` of account.move[.line] with the settlement date
-        query = re.sub(
-            r"\bdate\b", "COALESCE(l10n_it_vat_settlement_date, date)", query
-        )
-        return query, params
 
     def _get_settlement_date_domain(self, domain):
         """Create a copy of `domain`
@@ -53,5 +43,6 @@ class AccountTax(models.Model):
 
     def get_move_line_partial_domain(self, from_date, to_date, company_ids):
         domain = super().get_move_line_partial_domain(from_date, to_date, company_ids)
-        domain = self._inject_vat_settlement_date_domain(domain)
+        if self.env.context.get("use_l10n_it_vat_settlement_date"):
+            domain = self._inject_vat_settlement_date_domain(domain)
         return domain

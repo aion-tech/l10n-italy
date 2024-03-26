@@ -17,4 +17,7 @@
         "l10n_it_vat_settlement_date",
     ],
     "auto_install": True,
+    "data": [
+        "views/account_move_views.xml",
+    ],
 }

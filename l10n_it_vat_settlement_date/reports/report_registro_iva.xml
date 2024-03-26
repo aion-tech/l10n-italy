@@ -9,10 +9,7 @@
         inherit_id="l10n_it_vat_registries.report_registro_iva"
     >
         <xpath expr="(//tr[@name='vat_body_tax']/t/td)[1]" position="inside">
-            <div
-                t-if="move.l10n_it_vat_settlement_date"
-                t-esc="format_date(move.l10n_it_vat_settlement_date,date_format)"
-            />
+            <div t-field="move.l10n_it_vat_settlement_date" />
         </xpath>
         <xpath expr="(//tr[@name='vat_header_tax']/t/th)[1]" position="inside">
             <span>Settlement date</span>
