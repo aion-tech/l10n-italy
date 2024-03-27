@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-20 08:32+0000\n"
-"PO-Revision-Date: 2024-03-20 08:32+0000\n"
+"POT-Creation-Date: 2024-03-27 10:09+0000\n"
+"PO-Revision-Date: 2024-03-27 10:09+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,8 +17,8 @@ msgstr ""
 
 #. module: l10n_it_vat_settlement_date
 #: model_terms:ir.ui.view,arch_db:l10n_it_vat_settlement_date.report_registro_iva
-msgid "<span>Settlement date</span>"
-msgstr "<span>Data competenza</span>"
+msgid "<span>VAT Settlement date</span>"
+msgstr "<span>Data competenza IVA</span>"
 
 #. module: l10n_it_vat_settlement_date
 #: model:ir.model,name:l10n_it_vat_settlement_date.model_account_move
@@ -29,11 +29,6 @@ msgstr "Registrazione contabile"
 #: model:ir.model,name:l10n_it_vat_settlement_date.model_account_move_line
 msgid "Journal Item"
 msgstr "Movimento contabile"
-
-#. module: l10n_it_vat_settlement_date
-#: model:ir.model,name:l10n_it_vat_settlement_date.model_wizard_registro_iva
-msgid "Run VAT registry"
-msgstr "Stampa Registro IVA"
 
 #. module: l10n_it_vat_settlement_date
 #: model:ir.model,name:l10n_it_vat_settlement_date.model_account_tax
@@ -47,3 +42,13 @@ msgstr "Imposta"
 #: model:ir.model.fields,field_description:l10n_it_vat_settlement_date.field_account_payment__l10n_it_vat_settlement_date
 msgid "VAT Settlement Date"
 msgstr "Data competenza IVA"
+
+#. module: l10n_it_vat_settlement_date
+#: model:ir.model,name:l10n_it_vat_settlement_date.model_report_account_vat_period_end_statement_vat_statement
+msgid "VAT Statement report"
+msgstr "Report liquidazione IVA"
+
+#. module: l10n_it_vat_settlement_date
+#: model:ir.model,name:l10n_it_vat_settlement_date.model_account_vat_period_end_statement
+msgid "VAT period end statement"
+msgstr "Dichiarazione IVA di fine periodo"

@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import fields
 from odoo.tests import tagged
+from odoo.tools import formatLang
 
 from odoo.addons.account_vat_period_end_statement.tests.common import (
     TestVATStatementCommon,
@@ -69,3 +70,53 @@ class TestVATPeriodEndStatement(TestVATStatementCommon):
         self.assertEqual(
             new_authority_vat_amount, authority_vat_amount + bill.amount_tax_signed
         )
+
+    def _get_report(self, statement):
+        """Print the Vat Period End Statement of `statement`."""
+        report_action = self.env.ref(
+            "account_vat_period_end_statement.report_vat_statement"
+        )
+        html, _report_type = self.env["ir.actions.report"]._render_qweb_html(
+            report_action.report_name, statement.ids
+        )
+        return html
+
+    def test_report(self):
+        """When the settlement date is out of period,
+        the tax amounts are not shown in the report."""
+        # Arrange
+        current_period = self.current_period
+        tax = self.account_tax_22_credit
+        in_period_date = current_period.date_end + relativedelta(days=-1)
+        bill = self._create_vendor_bill(
+            self.env.ref("base.res_partner_4"),
+            in_period_date,
+            100,
+            tax,
+        )
+        out_of_period_date = current_period.date_end + relativedelta(days=+1)
+        bill.l10n_it_vat_settlement_date = out_of_period_date
+        statement = self._get_statement(
+            current_period,
+            fields.Date.today(),
+            tax.vat_statement_account_id,
+        )
+        # pre-condition
+        period_settled_moves = self.invoice_model.search(
+            current_period.get_domain("l10n_it_vat_settlement_date")
+        )
+        self.assertNotIn(bill, period_settled_moves)
+
+        # Act
+        # Invalidate the tax's cache otherwise the same (correct) values
+        # computed by the statement are printed in the report
+        tax.invalidate_recordset(
+            fnames=[
+                "deductible_balance",
+            ],
+        )
+        report_content = self._get_report(statement)
+
+        # Assert
+        report_content = report_content.decode()
+        self.assertNotIn(formatLang(statement.env, bill.amount_tax), report_content)
