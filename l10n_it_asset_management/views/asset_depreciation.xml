@@ -43,7 +43,7 @@
                             attrs="{'readonly': [('state', '!=', 'non_depreciated')]}"
                         />
                         <field
-                            name="base_computation"
+                            name="base_coeff"
                             attrs="{
                                 'readonly': [
                                     ('state', '!=', 'non_depreciated'),
@@ -51,22 +51,10 @@
                             }"
                         />
                         <field
-                            name="base_coeff"
-                            attrs="{
-                                'readonly': [
-                                    '|',
-                                        ('state', '!=', 'non_depreciated'),
-                                        ('base_computation', '!=', 'coeff'),
-                                ],
-                            }"
-                        />
-                        <field
                             name="base_max_amount"
                             attrs="{
                                 'readonly': [
-                                    '|',
-                                        ('state', '!=', 'non_depreciated'),
-                                        ('base_computation', '!=', 'max_amount'),
+                                    ('state', '!=', 'non_depreciated'),
                                 ],
                             }"
                         />

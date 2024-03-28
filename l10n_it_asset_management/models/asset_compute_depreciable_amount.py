@@ -8,16 +8,6 @@ class AssetComputeDepreciableAmount(models.AbstractModel):
     _name = "l10n_it_asset_management.compute.depreciable_amount"
     _description = "Compute depreciable amount"
 
-    base_computation = fields.Selection(
-        selection=[
-            ("coeff", "Coefficient"),
-            ("max_amount", "Maximum amount"),
-        ],
-        default="coeff",
-        required=True,
-        string="Depreciable amount computation",
-        help="How to compute the depreciable amount based on the purchase amount.",
-    )
     base_coeff = fields.Float(
         default=1,
         help="Coeff to compute depreciable amount from purchase amount",
@@ -28,12 +18,11 @@ class AssetComputeDepreciableAmount(models.AbstractModel):
     )
 
     def _get_depreciable_amount(self, base_amount):
+        """Compute how much of `base_amount` can be depreciated."""
         self.ensure_one()
-        computation_method = self.base_computation
-        if computation_method == "coeff":
+        depreciable_amount = base_amount
+        if self.base_coeff:
             depreciable_amount = base_amount * self.base_coeff
-        elif computation_method == "max_amount":
-            depreciable_amount = min(base_amount, self.base_max_amount)
-        else:
-            depreciable_amount = base_amount
+        if self.base_max_amount:
+            depreciable_amount = min(depreciable_amount, self.base_max_amount)
         return depreciable_amount

@@ -711,7 +711,6 @@ class TestAssets(TransactionCase):
         )
         category_civ_depreciation_type.update(
             {
-                "base_computation": "max_amount",
                 "base_max_amount": max_depreciable_amount,
             }
         )
@@ -720,7 +719,6 @@ class TestAssets(TransactionCase):
         )
         # pre-condition
         self.assertEqual(purchase_invoice.amount_untaxed, purchase_amount)
-        self.assertEqual(category_civ_depreciation_type.base_computation, "max_amount")
         self.assertEqual(
             category_civ_depreciation_type.base_max_amount, max_depreciable_amount
         )
@@ -741,7 +739,6 @@ class TestAssets(TransactionCase):
         civ_depreciation = asset.depreciation_ids.filtered(
             lambda x: x.type_id == civ_type
         )
-        self.assertEqual(civ_depreciation.base_computation, "max_amount")
         self.assertEqual(civ_depreciation.base_max_amount, max_depreciable_amount)
         self.assertEqual(civ_depreciation.amount_depreciable, max_depreciable_amount)
 

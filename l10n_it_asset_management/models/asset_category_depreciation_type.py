@@ -43,7 +43,6 @@ class AssetCategoryDepreciationType(models.Model):
         self.ensure_one()
         return {
             "amount_depreciable": self._get_depreciable_amount(amount_depreciable),
-            "base_computation": self.base_computation,
             "base_coeff": self.base_coeff,
             "base_max_amount": self.base_max_amount,
             "mode_id": self.mode_id.id,

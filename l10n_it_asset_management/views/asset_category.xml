@@ -39,23 +39,8 @@
                                 <field name="category_id" invisible="1" />
                                 <field name="depreciation_type_id" />
                                 <field name="pro_rata_temporis" />
-                                <field name="base_computation" />
-                                <field
-                                    name="base_coeff"
-                                    attrs="{
-                                        'readonly': [
-                                            ('base_computation', '!=', 'coeff'),
-                                        ],
-                                    }"
-                                />
-                                <field
-                                    name="base_max_amount"
-                                    attrs="{
-                                        'readonly': [
-                                            ('base_computation', '!=', 'max_amount'),
-                                        ],
-                                    }"
-                                />
+                                <field name="base_coeff" />
+                                <field name="base_max_amount" />
                                 <field name="percentage" />
                                 <field name="mode_id" />
                             </tree>

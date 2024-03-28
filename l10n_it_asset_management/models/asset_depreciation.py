@@ -193,7 +193,6 @@ class AssetDepreciation(models.Model):
 
     @api.onchange(
         "asset_id",
-        "base_computation",
         "base_coeff",
         "base_max_amount",
     )
