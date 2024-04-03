@@ -179,8 +179,15 @@ class Common(TransactionCase):
         return asset
 
     def _depreciate_asset_wizard(
-        self, asset, date_dep, period="year", period_count=None
+        self,
+        asset,
+        date_dep,
+        period="year",
+        period_count=None,
+        override_journal=None,
     ):
+        if override_journal is None:
+            override_journal = self.env["account.journal"].browse()
         wiz_vals = asset.with_context(
             **{"allow_reload_window": True}
         ).launch_wizard_generate_depreciations()
@@ -192,14 +199,26 @@ class Common(TransactionCase):
                     "date_dep": date_dep,
                     "period": period,
                     "period_count": period_count,
+                    "journal_id": override_journal.id,
                 }
             )
         )
         return wiz
 
-    def _depreciate_asset(self, asset, date_dep, period="year", period_count=None):
+    def _depreciate_asset(
+        self,
+        asset,
+        date_dep,
+        period="year",
+        period_count=None,
+        override_journal=None,
+    ):
         wiz = self._depreciate_asset_wizard(
-            asset, date_dep, period=period, period_count=period_count
+            asset,
+            date_dep,
+            period=period,
+            period_count=period_count,
+            override_journal=override_journal,
         )
         wiz.do_generate()
 
