@@ -6,7 +6,7 @@
     "website": "https://aion-tech.it/",
     # https://github.com/odoo/odoo/blob/14.0/odoo/addons/base/data/ir_module_category_data.xml
     "category": "Uncategorized",
-    "version": "16.0.1.0.2",
+    "version": "16.0.1.0.3",
     "depends": [
         "base",
         "l10n_it_fatturapa",
@@ -19,6 +19,7 @@
         "security/ir.model.access.csv",
         "data/bluenext_state_map.xml",
         "data/cron_data.xml",
+        "data/ir_actions_server_data.xml",
         "views/res_config_settings_view.xml",
         "views/fatturapa_attachment_out_views.xml",
         "views/fatturapa_attachment_in_views.xml",

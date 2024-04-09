@@ -1,9 +1,17 @@
 import base64
 import io
+import logging
 import zipfile
 
 from odoo import _, api, fields, models, release
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
+
+
+class DocumentAlreadySentError(UserError):
+    pass
+
 
 STATUS_CODE_MSG_MAP = {
     0: "Nessuno",
@@ -67,10 +75,17 @@ class FatturapaAttachmentOut(models.Model):
     def bluenext_send_documents_btn(self):
         self._bluenext_send_document_one()
 
+    def _bluenext_send_documents(self):
+        for inv in self:
+            try:
+                inv._bluenext_send_document_one()
+            except DocumentAlreadySentError as e:
+                _logger.warning(e)
+
     def _bluenext_send_document_one(self):
         self.ensure_one()
         if self.bluenext_archive_id:
-            raise UserError(
+            raise DocumentAlreadySentError(
                 _("Document already sent - Archive ID: %s") % self.bluenext_archive_id
             )
         bluenext = self.company_id._init_bluenext()
