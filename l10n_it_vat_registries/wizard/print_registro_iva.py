@@ -98,8 +98,6 @@ class WizardRegistroIva(models.TransientModel):
             "year_footer": self.year_footer,
             "date_format": lang.date_format,
             "only_totals": self.only_totals,
-            "entry_order": self.entry_order,
-            "show_full_contact_addess": self.show_full_contact_addess,
         }
         if self.tax_registry_id:
             datas_form["tax_registry_name"] = self.tax_registry_id.name
