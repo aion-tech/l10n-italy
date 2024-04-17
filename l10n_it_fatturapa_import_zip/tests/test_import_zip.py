@@ -113,3 +113,26 @@ class TestImportZIP(FatturapaCommon):
         self.assertEqual(
             original_in_invoice_registration_date, company.in_invoice_registration_date
         )
+
+    def test_access_other_user_zip(self):
+        """A user can see the zip files imported by other users."""
+        # Arrange
+        user = self.env.user
+        other_user = user.copy()
+        # pre-condition
+        self.assertNotEqual(user, other_user)
+
+        # Act
+        wizard_attachment_import = self.attachment_import_model.with_user(
+            other_user
+        ).create(
+            {
+                "name": "Test other user XML import",
+                "datas": self.getFile("xml_import.zip")[1],
+            }
+        )
+
+        # Assert
+        self.assertTrue(
+            wizard_attachment_import.ir_attachment_id.with_user(user).read()
+        )
