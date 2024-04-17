@@ -8,3 +8,4 @@ def post_init_hook(cr, registry):
     if root_menu:
         riba_menu = env.ref("l10n_it_riba.menu_riba")
         riba_menu.parent_id = root_menu.id
+        
