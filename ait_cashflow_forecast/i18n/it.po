@@ -1,0 +1,427 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* ait_cashflow_forecast
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0+e-20230710\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-08-02 07:43+0000\n"
+"PO-Revision-Date: 2023-08-02 07:43+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Cashflow Default Parameters</span>"
+msgstr "<span class=\"o_form_label\">Parametri predefiniti cashflow</span>"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Cashflow forecast sources</span>"
+msgstr "<span class=\"o_form_label\">Sorgenti Cashflow</span>"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__account_id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__module_ait_cashflow_forecast_account
+msgid "Account"
+msgstr "Conto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_account_id
+msgid "Account Field"
+msgstr "Campo conto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_account_formula
+msgid "Account Formula"
+msgstr "Formula conto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__journal_id
+msgid "Account Journal"
+msgstr "Registro"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_journal_id
+msgid "Account Journal Field"
+msgstr "Campo registro"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_journal_formula
+msgid "Account Journal Formula"
+msgstr "Formula registro"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__amount
+msgid "Amount"
+msgstr "Importo"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_amount_id
+msgid "Amount Field"
+msgstr "Campo importo"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_amount_formula
+msgid "Amount Formula"
+msgstr "Formula importo"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__amount_sign_formula
+msgid "Amount Sign Formula"
+msgstr "Formula Segno Importo"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__bank_id
+msgid "Bank Account"
+msgstr "Conto bancario"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_bank_id
+msgid "Bank Account Field"
+msgstr "Campo conto bancario"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_bank_formula
+msgid "Bank Account Formula"
+msgstr "Formula conto bancario"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_company__cashflow_billing_lead_time
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__cashflow_billing_lead_time
+msgid "Billing Lead Time (days)"
+msgstr "Lead Time Fatturazione (giorni)"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__module_ait_cashflow_forecast_crm
+msgid "CRM"
+msgstr ""
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__config_id
+msgid "Cashflow Config"
+msgstr "Configurazione Cashflow"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_cashflow_config
+msgid "Cashflow Configuration"
+msgstr "Configurazione cashflow"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.ir_model_search_view_cr
+msgid "Cashflow Enabled"
+msgstr "Cashflow abilitato"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.res_config_settings_view_form
+msgid "Cashflow Forecast"
+msgstr "Previsione Cashflow"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_ir_model__cashflow_enabled
+msgid "Cashflow Forecasting"
+msgstr "Cashflow previsionale"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_cashflow_record
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_form
+msgid "Cashflow Record"
+msgstr "Record cashflow"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_graph
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_pivot
+msgid "Cashflow Record Analysis"
+msgstr "Analisi Record Cashflow"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_config_form
+msgid "Cashflow Record Configuration"
+msgstr "Configurazione cashflow"
+
+#. module: ait_cashflow_forecast
+#: model:ir.actions.act_window,name:ait_cashflow_forecast.action_cashflow_config
+#: model:ir.ui.menu,name:ait_cashflow_forecast.menu_cashflow_config
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_config_tree
+msgid "Cashflow Record Configurations"
+msgstr "Configurazione cashflow"
+
+#. module: ait_cashflow_forecast
+#: model:ir.actions.act_window,name:ait_cashflow_forecast.action_cashflow_record
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin__cashflow_record_ids
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin__cashflow_records_count
+#: model:ir.ui.menu,name:ait_cashflow_forecast.menu_cashflow_record
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_tree
+msgid "Cashflow Records"
+msgstr "Record cashflow"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_cashflow_config_update_rule
+msgid "Cashflow Update Rule"
+msgstr "Regola aggiornamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_cashflow_mixin
+msgid "Cashfow Mixin"
+msgstr "Cashflow Mixin"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_res_company
+msgid "Companies"
+msgstr "Aziende"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__config_id
+msgid "Config"
+msgstr "Configurazione"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_res_config_settings
+msgid "Config Settings"
+msgstr "Impostazioni di configurazione"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields.selection,name:ait_cashflow_forecast.selection__cashflow_config_update_rule__trigger__create
+msgid "Create"
+msgstr "Creazione"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__create_uid
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__create_uid
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__create_uid
+msgid "Created by"
+msgstr "Creato da"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__create_date
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__create_date
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__create_date
+msgid "Created on"
+msgstr "Creato il"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__cum_sum
+msgid "Cumulative Sum"
+msgstr "Somma Cumulativa"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__date
+msgid "Date"
+msgstr "Data"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_date_id
+msgid "Date Field"
+msgstr "Campo data"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_date_formula
+msgid "Date Formula"
+msgstr "Formula Data"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__name
+msgid "Description"
+msgstr "Descrizione"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_ir_model__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_company__display_name
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "Nome visualizzato"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__domain
+msgid "Domain"
+msgstr "Dominio"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_ir_model__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_company__id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_ir_model____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_company____last_update
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings____last_update
+msgid "Last Modified on"
+msgstr "Ultima modifica il"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__write_uid
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__write_uid
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__write_uid
+msgid "Last Updated by"
+msgstr "Ultimo aggiornamento di"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__write_date
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__write_date
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__write_date
+msgid "Last Updated on"
+msgstr "Ultima modifica il"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__model_id
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__model_id
+msgid "Model"
+msgstr "Modello"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__model_name
+msgid "Model Name"
+msgstr "Nome modello"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model,name:ait_cashflow_forecast.model_ir_model
+msgid "Models"
+msgstr "Modelli"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__name
+msgid "Name"
+msgstr "Nome"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_name_id
+msgid "Name Field"
+msgstr "Campo nome"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_name_formula
+msgid "Name Formula"
+msgstr "Formula nome"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_form
+msgid "Open Source Record"
+msgstr "Apre il record sorgente"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__partner_id
+msgid "Partner"
+msgstr "Contatto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_partner_id
+msgid "Partner Field"
+msgstr "Campo contatto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_partner_formula
+msgid "Partner Formula"
+msgstr "Formula contatto"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__pt_id
+msgid "Payment Terms"
+msgstr "Termini di pagamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_pt_id
+msgid "Payment Terms Field"
+msgstr "Campo termini di pagamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__field_pt_formula
+msgid "Payment Terms Formula"
+msgstr "Formula termini di pagamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__module_ait_cashflow_forecast_purchase
+msgid "Purchase"
+msgstr "Acquisti"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__res_id
+msgid "Resource ID"
+msgstr "ID risorsa"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_record__model_name
+msgid "Resource Model"
+msgstr "Modello risorsa"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,help:ait_cashflow_forecast.field_cashflow_config__amount_sign_formula
+msgid "Return 1 or -1. Only used if Amount Field is set."
+msgstr ""
+"Ritorna 1 o -1. Usato solo nel caso in cui sia importato il campo Importo."
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__rule
+msgid "Rule"
+msgstr "Regola"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_config_form
+msgid "Rules"
+msgstr "Regole"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_res_config_settings__module_ait_cashflow_forecast_sale
+msgid "Sale"
+msgstr "Vendite"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__server_action_id
+msgid "Server Action"
+msgstr "Azione Server"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_mixin__cashflow_config_id
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_form
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_record_tree
+msgid "Source"
+msgstr "Sorgente"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config_update_rule__trigger
+msgid "Trigger"
+msgstr "Evento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields.selection,name:ait_cashflow_forecast.selection__cashflow_config_update_rule__trigger__unlink
+msgid "Unlink"
+msgstr "Eliminazione"
+
+#. module: ait_cashflow_forecast
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_config_form
+msgid "Update Rule"
+msgstr "Regola Aggiornamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,field_description:ait_cashflow_forecast.field_cashflow_config__rule_ids
+#: model_terms:ir.ui.view,arch_db:ait_cashflow_forecast.cashflow_config_form
+msgid "Update Rules"
+msgstr "Regole Aggiornamento"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields,help:ait_cashflow_forecast.field_ir_model__cashflow_enabled
+msgid "Whether this model supports cashflow forecasting."
+msgstr "Il modello supporto cashflow previsionale"
+
+#. module: ait_cashflow_forecast
+#: model:ir.model.fields.selection,name:ait_cashflow_forecast.selection__cashflow_config_update_rule__trigger__write
+msgid "Write"
+msgstr "Modifica"

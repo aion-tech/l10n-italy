@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<odoo>
+    <!-- Cashflow Record -->
+    <record
+    id="cashflow_record_search"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.search</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <search>
+                <field name="model_id" />
+                <field name="config_id" />
+                <field name="name" />
+                <field name="partner_id" />
+                <field name="date" />
+                <field name="amount" />
+                <field name="journal_id" />
+                <field name="bank_id" />
+                <field name="account_id" />
+                <field name="pt_id" />
+                <field name="cum_sum" />
+                <field
+                name="res_id"
+                groups="base.group_no_one" />
+            </search>
+        </field>
+    </record>
+    <record
+    id="cashflow_record_form"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.form</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <form string="Cashflow Record">
+                <header>
+                    <button
+                    name="open_source_record"
+                    type="object"
+                    string="Open Source Record"
+                    class="btn btn-link" />
+                </header>
+                <group>
+                    <field
+                    name="model_id"
+                    domain="[('cashflow_enabled', '=', True)]" />
+                    <field
+                    name="config_id"
+                    string="Source" />
+                    <field name="name" />
+                    <field name="partner_id" />
+                    <field name="date" />
+                    <field name="amount" />
+                    <field name="journal_id" />
+                    <field name="bank_id" />
+                    <field name="account_id" />
+                    <field name="pt_id" />
+                    <field name="cum_sum" />
+                </group>
+            </form>
+        </field>
+    </record>
+    <record
+    id="cashflow_record_tree"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.tree</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <tree string="Cashflow Records">
+                <field
+                name="create_date"
+                optional="show" />
+                <field
+                name="model_id"
+                optional="hide" />
+                <field
+                name="config_id"
+                string="Source" />
+                <field name="name" />
+                <field name="partner_id" />
+                <field name="date" />
+                <field name="amount" />
+                <field name="journal_id" />
+                <field name="bank_id" />
+                <field name="account_id" />
+                <field name="pt_id" />
+                <field name="cum_sum" />
+            </tree>
+        </field>
+    </record>
+    <record
+    id="cashflow_record_pivot"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.pivot</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <pivot
+            string="Cashflow Record Analysis"
+            sample="1">
+                <field
+                name="date"
+                interval="day"
+                type="col" />
+                <field
+                name="account_id"
+                type="row" />
+                <field
+                name="amount"
+                type="measure" />
+            </pivot>
+        </field>
+    </record>
+    <record
+    id="cashflow_record_graph"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.graph</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <graph
+            string="Cashflow Record Analysis"
+            type="line">
+                <field
+                name="date"
+                interval="day"
+                type="row" />
+                <field
+                name="amount"
+                type="measure" />
+            </graph>
+        </field>
+    </record>
+    <record
+    id="action_cashflow_record"
+    model="ir.actions.act_window">
+        <field name="name">Cashflow Records</field>
+        <field name="res_model">cashflow.record</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+    </record>
+    <menuitem
+    id="menu_cashflow_record"
+    parent="account.account_reports_management_menu"
+    name="Cashflow Records"
+    sequence="99"
+    action="action_cashflow_record" />
+</odoo>

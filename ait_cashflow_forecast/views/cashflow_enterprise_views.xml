@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<odoo>
+    <record
+    id="cashflow_record_cohort"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.cohort</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <cohort
+            string="Cashflow Records"
+            date_start="create_date"
+            date_stop="date"
+            interval="month" />
+        </field>
+    </record>
+    <record
+    id="cashflow_record_dashboard"
+    model="ir.ui.view">
+        <field name="name">cashflow.record.dashboard</field>
+        <field name="model">cashflow.record</field>
+        <field
+        name="arch"
+        type="xml">
+            <dashboard>
+                <view
+                type="cohort"
+                ref="ait_cashflow_forecast.cashflow_record_cohort" />
+                <group string="Cashflow">
+                    <aggregate
+                    name="amount"
+                    field="amount"
+                    widget="monetary" />
+                    <aggregate
+                    name="model_id"
+                    field="model_id"
+                    string="Sources" />
+                </group>
+                <view
+                type="pivot"
+                ref="ait_cashflow_forecast.cashflow_record_pivot" />
+            </dashboard>
+        </field>
+    </record>
+</odoo>

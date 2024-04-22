@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record
+    id="res_config_settings_view_form"
+    model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ait_cashflow_forecast</field>
+        <field name="model">res.config.settings</field>
+        <field
+        name="priority"
+        eval="999" />
+        <field
+        name="inherit_id"
+        ref="base.res_config_settings_view_form" />
+        <field
+        name="arch"
+        type="xml">
+            <xpath
+            expr="//div[hasclass('settings')]"
+            position="inside">
+                <div
+                class="app_settings_block"
+                data-string="Cashflow Forecast"
+                string="Cashflow Forecast"
+                data-key="ait_cashflow_forecast"
+                groups="base.group_erp_manager">
+                    <h2>Cashflow Forecast</h2>
+                    <div
+                    class="row mt16 o_settings_container"
+                    name="ait_cashflow_forecast_setting_container">
+                        <div class="o_form_label">Cashflow forecast sources</div>
+                        <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        title="">
+                            <div class="o_setting_left_pane">
+                                <field name="module_ait_cashflow_forecast_account" />
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label
+                                for="module_ait_cashflow_forecast_account"
+                                class="o_light_label" />
+                            </div>
+                        </div>
+                        <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        title="">
+                            <div class="o_setting_left_pane">
+                                <field name="module_ait_cashflow_forecast_crm" />
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label
+                                for="module_ait_cashflow_forecast_crm"
+                                class="o_light_label" />
+                            </div>
+                        </div>
+                        <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        title="">
+                            <div class="o_setting_left_pane">
+                                <field name="module_ait_cashflow_forecast_purchase" />
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label
+                                for="module_ait_cashflow_forecast_purchase"
+                                class="o_light_label" />
+                            </div>
+                        </div>
+                        <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        title="">
+                            <div class="o_setting_left_pane">
+                                <field name="module_ait_cashflow_forecast_sale" />
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label
+                                for="module_ait_cashflow_forecast_sale"
+                                class="o_light_label" />
+                            </div>
+                        </div>
+                        <div class="o_form_label">Cashflow Default Parameters</div>
+                        <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        title="">
+                            <label
+                            for="cashflow_billing_lead_time"
+                            class="col-lg-4 o_light_label" />
+                            <field name="cashflow_billing_lead_time" />
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+
+    <record id="cashflow_config_purchase_order" model="cashflow.config">
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="name">Request for Quotation / Purchase Order</field>
+        <field name="field_name_id" ref="purchase.field_purchase_order__name"/>
+        <field name="field_partner_id" ref="purchase.field_purchase_order__partner_id"/>
+        <field name="field_amount_id" ref="purchase.field_purchase_order__amount_total"/>
+        <field name="amount_sign_formula">result = -1</field>
+        <field name="field_date_id" ref="purchase.field_purchase_order__date_planned"/>
+        <field name="field_pt_id" ref="purchase.field_purchase_order__payment_term_id"/>
+        <field name="field_journal_formula">
+result = self.env['account.journal'].search([('type', '=', 'purchase')], limit=1)
+        </field>
+        <field name="field_bank_formula">
+result = self.env['res.partner.bank'].search(
+    [
+        ('partner_id', '=', self.env.user.company_id.partner_id.id)
+    ], limit=1)
+        </field>
+        <field name="field_account_formula">
+result = self.partner_id.property_account_payable_id.id
+        </field>
+        <field name="domain">[]</field>
+    </record>
+
+    <record id="cashflow_config_purchase_order_write" model="cashflow.config.update.rule">
+        <field name="trigger">write</field>
+        <field name="rule">
+if not self.state in ['cancel']:
+    self._create_cashflow_record()
+        </field>
+        <field name="config_id"
+            ref="ait_cashflow_forecast_purchase.cashflow_config_purchase_order"/>
+    </record>
+    <record id="cashflow_config_purchase_order_unlink" model="cashflow.config.update.rule">
+        <field name="trigger">unlink</field>
+        <field name="rule">self.unlink_cashflow_records()</field>
+        <field name="config_id"
+            ref="ait_cashflow_forecast_purchase.cashflow_config_purchase_order"/>
+    </record>
+
+</odoo>

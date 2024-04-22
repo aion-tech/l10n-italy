@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cashflow_config,access_cashflow_config,model_cashflow_config,account.group_account_manager,1,1,1,1
+access_cashflow_config_rule,access_cashflow_config_rule,model_cashflow_config_update_rule,account.group_account_manager,1,1,1,1
+access_cashflow_record,access_cashflow_record,model_cashflow_record,base.group_user,1,1,1,1

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record
+    id="ir_model_form_view_cf"
+    model="ir.ui.view">
+        <field name="name">ir.model.form.cf</field>
+        <field name="model">ir.model</field>
+        <field
+        name="inherit_id"
+        ref="base.view_model_form" />
+        <field
+        name="arch"
+        type="xml">
+            <field
+            name="transient"
+            position="after">
+                <field
+                name="cashflow_enabled"
+                groups="base.group_no_one" />
+            </field>
+        </field>
+    </record>
+    <record
+    id="ir_model_search_view_cr"
+    model="ir.ui.view">
+        <field name="name">ir.model.search.cf</field>
+        <field name="model">ir.model</field>
+        <field
+        name="inherit_id"
+        ref="base.view_model_search" />
+        <field
+        name="arch"
+        type="xml">
+            <field
+            name="model"
+            position="after">
+                <filter
+                string="Cashflow Enabled"
+                name="cashflow_enabled"
+                domain="[('cashflow_enabled', '=', True)]" />
+            </field>
+        </field>
+    </record>
+</odoo>
