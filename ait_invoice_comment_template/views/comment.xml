@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id="sale_base_comment_template_form_inherit" model="ir.ui.view">
+		<field name="name">sale.base.comment.template.form.inherit</field>
+		<field name="model">base.comment.template</field>
+		<field name="inherit_id" ref="base_comment_template.view_base_comment_template_form" />
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='position']" position="after">
+                <field name="invoice_template" attrs="{'invisible': ['|', ('model_selection', '!=', 'account.move'), ('position', '=', 'line')]}"/>
+			</xpath>
+		</field>
+	</record>
+
+    <!-- <template id="invoice_form_add_comment" name="ait_invoice_form_add_comment" inherit_id="account_comment_template.sale_order_form_add_comment">
+        <xpath expr="//field[@name='comment_template_ids']" position="attributes">
+            <attribute name="editable" value="bottom"/>
+        </xpath>
+    </template> -->
+</odoo>

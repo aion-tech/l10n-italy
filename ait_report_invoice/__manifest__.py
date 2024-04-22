@@ -13,7 +13,7 @@
         'l10n_it_shipping_invoice',
         'l10n_it_delivery_note_base',
         'account_comment_template',
-        'ait_sale_comment_template',
+        'ait_invoice_comment_template',
         'product',
         ],
     'data': [
