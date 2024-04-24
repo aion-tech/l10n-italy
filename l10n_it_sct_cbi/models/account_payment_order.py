@@ -39,7 +39,7 @@ class AccountPaymentOrder(models.Model):
             if iban_node is None:
                 raise UserError(
                     _(
-                        "Bank account '%(partner_bank)s' must hava a valid IBAN",
+                        "Bank account '%(partner_bank)s' must have a valid IBAN",
                         partner_bank=partner_bank.display_name,
                     )
                 )
@@ -277,17 +277,15 @@ class AccountPaymentOrder(models.Model):
     def _l10n_it_sct_cbi_gen_args(self):
         payment_method = self.payment_method_id
         pain_flavor = payment_method.pain_version
-        if pain_flavor in [
-            "CBIBdyPaymentRequest.00.04.01",
-            "CBIBdyCrossBorderPaymentRequest.00.01.01",
-        ]:
+        if pain_flavor == "CBIBdyCrossBorderPaymentRequest.00.01.01":
             bic_xml_tag = "BIC"
-            name_maxsize = 70
+        elif pain_flavor == "CBIBdyPaymentRequest.00.04.01":
+            bic_xml_tag = "BICFI"
         else:
             raise self._l10n_it_sct_cbi_unsupported_pain_exception(pain_flavor)
         return {
             "bic_xml_tag": bic_xml_tag,
-            "name_maxsize": name_maxsize,
+            "name_maxsize": 70,
             "convert_to_ascii": payment_method.convert_to_ascii,
             "payment_method": "TRF",
             "file_prefix": "sct_bci_",
