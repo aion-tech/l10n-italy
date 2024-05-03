@@ -4,6 +4,23 @@ class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
     pricelist_item_client_ref = fields.Char(string="Pricelist Client Ref.")
+    comment_id = fields.Many2one('base.comment.template', 'Comment')
+    comment_text = fields.Html(string='Comment text')
+    show_line_comment = fields.Boolean('Show comment', default=False)
+
+    @api.onchange("comment_id")
+    def _compute_comment_text(self):
+        if self.comment_id:
+            self.comment_text = self.comment_id.text
+
+    @api.depends('comment_id')
+    def can_show_comment(self, invoice_report_state_exclude):
+        for rec in self:
+            rec.show_line_comment = False
+            if rec.comment_text and not rec.comment_id:
+                rec.show_line_comment = True
+            if rec.comment_id and rec.comment_id.invoice_template not in invoice_report_state_exclude:
+                rec.show_line_comment = True
 
     @api.onchange('product_id')
     def _update_comments(self):

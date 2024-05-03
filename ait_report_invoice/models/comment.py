@@ -9,7 +9,7 @@ class BaseCommentTemplate(models.Model):
     invoice_template = fields.Selection(string="Invoice template",
         selection=[
             ("draft", "Draft"),
-            ("confirmed", "Confirmed"),
+            ("posted", "Posted"),
             ("all", "ALL"),
         ],
         default="all",)

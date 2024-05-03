@@ -9,6 +9,12 @@ class InvoiceReport(models.AbstractModel):
         docs = self.env['account.move'].browse(docids)
         for doc in docs:
             doc._compute_pricelist_client_ref_on_lines()
+            for line in doc.invoice_line_ids:
+                if doc.state in ('draft', 'cancel'):
+                    invoice_report_state_exclude = ['posted']
+                else:
+                    invoice_report_state_exclude = ['draft']
+                line.can_show_comment(invoice_report_state_exclude)
         return {
             'company': docs[0].company_id,
             'doc_ids': docs.ids,

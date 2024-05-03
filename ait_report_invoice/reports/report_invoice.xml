@@ -128,7 +128,7 @@
                 <div id="before_lines"/>
                 <!-- before line comments -->
                 <div id="ait_ir_before_lines_comments">
-                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'before_lines')"
+                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'before_lines' and x.invoice_template in [doc.state, 'all'])"
                     t-as="comment_template_top" id="before_lines_comment">
                         <div id="ait_ir_before_lines_comment_div">
                             <t t-if="comment_template_top.page_break_before" id="ait_ir_before_lines_comment_pb_before">
@@ -298,6 +298,16 @@
                                             <span t-field="line.name" />
                                         </td>
                                     </t>
+                                    <t t-if="line.show_line_comment">
+                                        <tr>
+                                            <td>
+                                                <span class="m-0" />
+                                            </td>
+                                            <td colspan="6" id="line_comment">
+                                                <span t-field="line.comment_text" />
+                                            </td>
+                                        </tr>
+                                    </t>
                                 </tr>
                             </t>
                         </tbody>
@@ -306,7 +316,7 @@
                 <div id="after_lines"/>
                 <!-- after line comments -->
                 <div id="ait_ir_after_lines_comments">
-                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'after_lines')"
+                    <t t-foreach="doc.comment_template_ids.filtered(lambda x: x.position == 'after_lines' and x.invoice_template in [doc.state, 'all'])"
                         t-as="comment_template_bottom" id="after_lines_comment">
                         <div id="ait_ir_after_lines_comment_div">
                             <t t-if="comment_template_bottom.page_break_before" id="ait_ir_after_lines_comment_pb_before">

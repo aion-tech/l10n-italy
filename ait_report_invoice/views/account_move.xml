@@ -9,6 +9,21 @@
             <field name="partner_id" position="after">
                 <field name="compute_pricelist_client_ref_on_lines" invisible="1"/>
             </field>
+            <xpath expr="//field[@name='invoice_line_ids']//form//field[@name='name']" position="after">
+                <div name="comments" >
+                    <label for="comment_id"/>
+                    <field name="comment_id" string="Modello nota"
+                    domain="['&amp;', ('position', '=', 'line'), ('model_selection', '=', 'account.move')]"
+                    context="{'default_position': 'line'}"/>
+                    <field name="comment_text"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree" position="inside">
+                <field string="Modello nota" name="comment_id" optional="hidden" 
+                domain="['&amp;', ('position', '=', 'line'), ('model_selection', '=', 'account.move')]"
+                    options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}"/>
+                <field string="Nota" name="comment_text" optional="hidden"/>
+            </xpath>
         </field>
     </record>
 
