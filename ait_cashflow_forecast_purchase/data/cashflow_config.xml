@@ -28,6 +28,7 @@ result = self.partner_id.property_account_payable_id.id
     <record id="cashflow_config_purchase_order_write" model="cashflow.config.update.rule">
         <field name="trigger">write</field>
         <field name="rule">
+self.unlink_cashflow_records()
 if not self.state in ['cancel']:
     self._create_cashflow_record()
         </field>

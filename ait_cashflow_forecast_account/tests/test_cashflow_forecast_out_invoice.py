@@ -46,7 +46,7 @@ class TestCashflowForecastAccountOutInvoice(TestCashflowForecastAccountCommon):
         # Act
         new_total = invoice.amount_total * 2
         invoice.invoice_line_ids[0].quantity = 2
-        invoice._compute_tax_totals()
+        invoice.invoice_line_ids[0]._compute_totals()
         # Assert
         self.assertTrue(invoice.cashflow_config_id)
         self.assertTrue(invoice.cashflow_record_ids)
@@ -104,3 +104,20 @@ class TestCashflowForecastAccountOutInvoice(TestCashflowForecastAccountCommon):
             date, amt = payment_term
             self.assertEqual(fields.Date.to_string(cashflow_rec.date), date)
             self.assertEqual(cashflow_rec.amount, amt)
+
+    def test_customer_invoice_cancel(self):
+        """cancelling a customer invoice should
+        unlink the invoice's cashflow record(s)"""
+        # Arrange
+        invoice = self._create_invoice(**self.default_inv_vals)
+        # Pre-condition: cashflow record created
+        self.assertTrue(invoice.cashflow_config_id)
+        self.assertTrue(invoice.cashflow_record_ids)
+        self.assertEqual(invoice.cashflow_records_count, 1)
+        # Act
+        cashflow_records = invoice.cashflow_record_ids.ids
+        invoice.button_cancel()
+        # Assert
+        self.assertFalse(invoice.cashflow_record_ids)
+        self.assertEqual(invoice.cashflow_records_count, 0)
+        self.assertFalse(self.env["cashflow.record"].browse(cashflow_records).exists())

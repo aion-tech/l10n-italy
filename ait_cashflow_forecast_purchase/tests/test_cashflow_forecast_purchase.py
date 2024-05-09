@@ -144,3 +144,14 @@ class TestCashflowForecastPurchaseOrder(CashflowTestCommon):
         self.assertEqual(po.cashflow_records_count, 0)
         self.assertTrue(po.invoice_ids.cashflow_record_ids)
         self.assertEqual(po.invoice_ids.cashflow_records_count, 1)
+
+    def test_purchase_order_cancel(self):
+        # Arrange
+        po = self._create_po(**self.default_po_vals)
+        cashflow_record_ids = po.cashflow_record_ids.ids
+        # Act
+        po.button_cancel()
+        # Assert
+        cr_ids = self.env["cashflow.record"].browse(cashflow_record_ids).exists()
+        self.assertFalse(cr_ids)
+        self.assertEqual(len(cr_ids), 0)

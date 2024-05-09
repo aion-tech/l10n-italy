@@ -287,10 +287,12 @@ class CashflowMixin(models.AbstractModel):
 
         return res
 
-    def unlink_cashflow_records(self):
+    def unlink_cashflow_records(self) -> None:
         self = self.with_context(
             skip_cashflow_rule_write=True,
         )
+        # self.cashflow_record_ids.unlink()
         self.cashflow_record_ids = [
-            Command.unlink(i) for i in self.cashflow_record_ids.ids
+            Command.delete(i) for i in self.cashflow_record_ids.ids
         ]
+        return

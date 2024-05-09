@@ -139,6 +139,7 @@ class TestCashflowForecastSaleOrder(CashflowTestCommon):
         vals = self.default_so_vals.copy()
         vals.update(dict(commitment_date="2000-01-01"))
         so = self._create_so(**vals)
+        sale_cashflow_record_ids = so.cashflow_record_ids.ids
         # Act
         wizard_ctx = {
             "active_model": "sale.order",
@@ -154,14 +155,17 @@ class TestCashflowForecastSaleOrder(CashflowTestCommon):
         # Assert
         self.assertFalse(so.cashflow_record_ids)
         self.assertEqual(so.cashflow_records_count, 0)
+        self.assertFalse(self.env["cashflow.record"].browse(sale_cashflow_record_ids).exists())
         self.assertTrue(so.invoice_ids.cashflow_record_ids)
         self.assertEqual(so.invoice_ids.cashflow_records_count, 1)
 
     def test_sale_order_cancel(self):
         # Arrange
         so = self._create_so(**self.default_so_vals)
+        cashflow_record_ids = so.cashflow_record_ids.ids
         # Act
         so.action_cancel()
         # Assert
-        self.assertFalse(so.cashflow_record_ids)
-        self.assertEqual(len(so.cashflow_record_ids), 0)
+        cr_ids = self.env["cashflow.record"].browse(cashflow_record_ids).exists()
+        self.assertFalse(cr_ids)
+        self.assertEqual(len(cr_ids), 0)
