@@ -10,7 +10,7 @@
         <field name="field_partner_id" ref="account.field_account_move__partner_id"/>
         <field name="field_amount_id" ref="account.field_account_move__amount_total"/>
         <field name="field_date_formula">
-result = (self.invoice_date or self._fields['invoice_date'].context_today(self)) + timedelta(days = self.company_id.cashflow_billing_lead_time)
+result = (self.invoice_date_due or self._fields['invoice_date'].context_today(self)) + timedelta(days = self.company_id.cashflow_billing_lead_time)
         </field>
         <field name="field_pt_id" ref="account.field_account_move__invoice_payment_term_id"/>
         <field name="field_journal_id" ref="account.field_account_move__journal_id"/>
