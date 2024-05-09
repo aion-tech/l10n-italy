@@ -156,3 +156,12 @@ class TestCashflowForecastSaleOrder(CashflowTestCommon):
         self.assertEqual(so.cashflow_records_count, 0)
         self.assertTrue(so.invoice_ids.cashflow_record_ids)
         self.assertEqual(so.invoice_ids.cashflow_records_count, 1)
+
+    def test_sale_order_cancel(self):
+        # Arrange
+        so = self._create_so(**self.default_so_vals)
+        # Act
+        so.action_cancel()
+        # Assert
+        self.assertFalse(so.cashflow_record_ids)
+        self.assertEqual(len(so.cashflow_record_ids), 0)

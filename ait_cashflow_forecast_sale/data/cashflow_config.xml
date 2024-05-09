@@ -31,6 +31,8 @@ result = self.partner_id.property_account_receivable_id.id
         <field name="rule">
 if self.state not in ['cancel']:
     self._create_cashflow_record()
+if self.state in ["cancel"]:
+    self.unlink_cashflow_records()
         </field>
         <field name="config_id"
             ref="ait_cashflow_forecast_sale.cashflow_config_sale_order"/>
