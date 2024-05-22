@@ -299,9 +299,12 @@ class Common(TransactionCase):
 
     def _civil_depreciate_asset(self, asset):
         # Keep only one civil depreciation
+        civil_depreciation_type = self.env.ref(
+            "l10n_it_asset_management.ad_type_civilistico"
+        )
         civil_depreciation = first(
             asset.depreciation_ids.filtered(
-                lambda d: d.type_id == self.civilistico_asset_dep_type
+                lambda d: d.type_id == civil_depreciation_type
             )
         )
         (asset.depreciation_ids - civil_depreciation).unlink()
