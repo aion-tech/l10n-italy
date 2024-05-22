@@ -65,6 +65,12 @@ class Common(TransactionCase):
             ],
             limit=1,
         )
+        cls.sale_journal = cls.env["account.journal"].search(
+            [
+                ("type", "=", "sale"),
+            ],
+            limit=1,
+        )
 
         cls.civilistico_asset_dep_type = cls.env.ref(
             "l10n_it_asset_management.ad_type_civilistico"
@@ -200,6 +206,27 @@ class Common(TransactionCase):
         self.assertEqual(purchase_invoice.state, "posted")
         return purchase_invoice
 
+    def _create_sale_invoice(self, asset, amount=7000, post=True):
+        sale_invoice = self.env["account.move"].create(
+            {
+                "move_type": "out_invoice",
+                "partner_id": self.env.ref("base.partner_demo").id,
+                "journal_id": self.sale_journal.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "account_id": asset.category_id.asset_account_id.id,
+                            "quantity": 1,
+                            "price_unit": amount,
+                        },
+                    )
+                ],
+            }
+        )
+        if post:
+            sale_invoice.action_post()
+        return sale_invoice
+
     def _civil_depreciate_asset(self, asset):
         # Keep only one civil depreciation
         civil_depreciation = first(
@@ -270,3 +297,25 @@ class Common(TransactionCase):
         report_ids = report_result["context"]["report_action"]["context"]["active_ids"]
         report = self.env[report_model].browse(report_ids)
         return report
+
+    def _dismiss_with_sale(self, asset, sale_invoice):
+        wiz_vals = sale_invoice.open_wizard_manage_asset()
+        move_line_ids = wiz_vals["context"]["default_move_line_ids"][0][2]
+        move_lines = self.env["account.move.line"].browse(move_line_ids)
+        move_lines_to_do = move_lines.filtered(
+            lambda x: x.account_id == asset.category_id.asset_account_id
+        )
+        wiz_vals["context"]["default_move_line_ids"] = [
+            Command.set(move_lines_to_do.ids)
+        ]
+        wiz = (
+            self.env["wizard.account.move.manage.asset"]
+            .with_context(**wiz_vals["context"])
+            .create(
+                {
+                    "management_type": "dismiss",
+                    "asset_id": asset.id,
+                }
+            )
+        )
+        wiz.link_asset()

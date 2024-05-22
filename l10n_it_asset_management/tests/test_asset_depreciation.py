@@ -40,3 +40,24 @@ class TestAssetDepreciation(Common):
         # Assert: new account is used in generated move
         depreciation_move = asset_depreciation.line_ids.move_id
         self.assertIn(new_depreciation_account, depreciation_move.line_ids.account_id)
+
+    def test_gain_coefficient(self):
+        """Gain is proportional to the depreciation coefficient."""
+        purchase_date = date(2020, month=1, day=1)
+        asset = self._create_asset(purchase_date)
+
+        depreciation_date = date(2020, month=12, day=31)
+        asset_depreciation = asset.depreciation_ids.filtered(
+            lambda x, dev_type=self.civilistico_asset_dep_type: x.type_id == dev_type
+        )
+        asset_depreciation.base_coeff = 0.2
+        asset_depreciation.percentage = 20.0
+
+        # Act
+        self._depreciate_asset(asset, depreciation_date)
+        sale_invoice = self._create_sale_invoice(asset, amount=1000)
+        self._dismiss_with_sale(asset, sale_invoice)
+
+        # Assert: Gain is proportional to `base_coeff`
+        gain = asset_depreciation.line_ids[-1].amount
+        self.assertEqual(gain, 20)
