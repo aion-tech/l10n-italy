@@ -68,8 +68,8 @@ class AssetDepreciationModeLine(models.Model):
             return multiplier
 
         lines = self.filtered(
-            lambda l: l.from_year_nr <= passed_fiscal_years
-            and (not l.to_year_nr or l.to_year_nr >= passed_fiscal_years)
+            lambda line: line.from_year_nr <= passed_fiscal_years
+            and (not line.to_year_nr or line.to_year_nr >= passed_fiscal_years)
         )
         if not lines:
             return multiplier
