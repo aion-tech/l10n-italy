@@ -272,7 +272,7 @@ class AssetDepreciationLine(models.Model):
 
     def make_name(self):
         self.ensure_one()
-        return "{} ({})".format(self.name, self.depreciation_id.make_name())
+        return f"{self.name} ({self.depreciation_id.make_name()})"
 
     def need_normalize_depreciation_nr(self):
         """Check if numbers need to be normalized"""
@@ -314,7 +314,6 @@ class AssetDepreciationLine(models.Model):
         :param force: force normalization for every depreciations' lines
         """
         for dep in self.mapped("depreciation_id"):
-
             # Avoid if user chooses to use custom numbers
             if dep.force_all_dep_nr:
                 continue
@@ -344,7 +343,7 @@ class AssetDepreciationLine(models.Model):
         self.mapped("move_id").unlink()
 
     def generate_account_move(self):
-        for line in self.filtered(lambda l: l.needs_account_move()):
+        for line in self.filtered(lambda line: line.needs_account_move()):
             line.generate_account_move_single()
 
     def generate_account_move_single(self):
@@ -363,10 +362,14 @@ class AssetDepreciationLine(models.Model):
 
     def get_account_move_vals(self):
         self.ensure_one()
+        journal = self.env.context.get(
+            "l10n_it_asset_override_journal",
+            self.asset_id.category_id.journal_id,
+        )
         return {
             "company_id": self.company_id.id,
             "date": self.date,
-            "journal_id": self.asset_id.category_id.journal_id.id,
+            "journal_id": journal.id,
             "line_ids": [],
             "ref": _("Asset: ") + self.asset_id.make_name(),
             "move_type": "entry",
@@ -387,7 +390,7 @@ class AssetDepreciationLine(models.Model):
         Maps line `move_type` to its own method for generating move lines.
         """
         return {
-            t: getattr(self, "get_{}_account_move_line_vals".format(t), False)
+            t: getattr(self, f"get_{t}_account_move_line_vals", False)
             for t in dict(self._fields["move_type"].selection).keys()
         }
 
@@ -397,7 +400,7 @@ class AssetDepreciationLine(models.Model):
         # Asset depreciation
         if not self.partial_dismissal:
             credit_account_id = self.asset_id.category_id.fund_account_id.id
-            debit_account_id = self.asset_id.category_id.depreciation_account_id.id
+            debit_account_id = self.depreciation_id.depreciation_account_id.id
 
         # Asset partial dismissal
         else:
@@ -424,7 +427,7 @@ class AssetDepreciationLine(models.Model):
     def get_gain_account_move_line_vals(self):
         self.ensure_one()
         credit_line_vals = {
-            "account_id": self.asset_id.category_id.gain_account_id.id,
+            "account_id": self.depreciation_id.gain_account_id.id,
             "credit": self.amount,
             "debit": 0.0,
             "currency_id": self.currency_id.id,
@@ -459,7 +462,7 @@ class AssetDepreciationLine(models.Model):
             "name": " - ".join((self.asset_id.make_name(), self.name)),
         }
         debit_line_vals = {
-            "account_id": self.asset_id.category_id.loss_account_id.id,
+            "account_id": self.depreciation_id.loss_account_id.id,
             "credit": 0.0,
             "debit": self.amount,
             "currency_id": self.currency_id.id,
@@ -481,7 +484,7 @@ class AssetDepreciationLine(models.Model):
         dep.ensure_one()
         types = ("gain", "loss")
         gain_or_loss = self.filtered(
-            lambda l: l.needs_account_move() and l.move_type in types
+            lambda line: line.needs_account_move() and line.move_type in types
         )
         if gain_or_loss:
             gain_or_loss.generate_account_move_single()
@@ -492,7 +495,7 @@ class AssetDepreciationLine(models.Model):
         dep.ensure_one()
         types = ("depreciated", "gain", "loss")
         to_create_move = self.filtered(
-            lambda l: l.needs_account_move() and l.move_type in types
+            lambda line: line.needs_account_move() and line.move_type in types
         )
         if to_create_move:
             to_create_move.generate_account_move()
