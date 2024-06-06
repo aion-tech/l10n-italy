@@ -272,7 +272,7 @@ class AssetDepreciationLine(models.Model):
 
     def make_name(self):
         self.ensure_one()
-        return f"{self.name} ({self.depreciation_id.make_name()})"
+        return "{} ({})".format(self.name, self.depreciation_id.make_name())
 
     def need_normalize_depreciation_nr(self):
         """Check if numbers need to be normalized"""
@@ -314,6 +314,7 @@ class AssetDepreciationLine(models.Model):
         :param force: force normalization for every depreciations' lines
         """
         for dep in self.mapped("depreciation_id"):
+
             # Avoid if user chooses to use custom numbers
             if dep.force_all_dep_nr:
                 continue
@@ -343,7 +344,7 @@ class AssetDepreciationLine(models.Model):
         self.mapped("move_id").unlink()
 
     def generate_account_move(self):
-        for line in self.filtered(lambda line: line.needs_account_move()):
+        for line in self.filtered(lambda l: l.needs_account_move()):
             line.generate_account_move_single()
 
     def generate_account_move_single(self):
@@ -390,7 +391,7 @@ class AssetDepreciationLine(models.Model):
         Maps line `move_type` to its own method for generating move lines.
         """
         return {
-            t: getattr(self, f"get_{t}_account_move_line_vals", False)
+            t: getattr(self, "get_{}_account_move_line_vals".format(t), False)
             for t in dict(self._fields["move_type"].selection).keys()
         }
 
@@ -484,7 +485,7 @@ class AssetDepreciationLine(models.Model):
         dep.ensure_one()
         types = ("gain", "loss")
         gain_or_loss = self.filtered(
-            lambda line: line.needs_account_move() and line.move_type in types
+            lambda l: l.needs_account_move() and l.move_type in types
         )
         if gain_or_loss:
             gain_or_loss.generate_account_move_single()
@@ -495,7 +496,7 @@ class AssetDepreciationLine(models.Model):
         dep.ensure_one()
         types = ("depreciated", "gain", "loss")
         to_create_move = self.filtered(
-            lambda line: line.needs_account_move() and line.move_type in types
+            lambda l: l.needs_account_move() and l.move_type in types
         )
         if to_create_move:
             to_create_move.generate_account_move()

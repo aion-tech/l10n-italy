@@ -713,7 +713,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
     type_name = fields.Char()
 
     def clean_unused(self):
-        self.filtered(lambda line: line.do_clean()).unlink()
+        self.filtered(lambda l: l.do_clean()).unlink()
 
     def do_clean(self):
         self.ensure_one()
@@ -725,7 +725,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
         ):
             previous_line = (
                 self.report_depreciation_id.report_depreciation_year_line_ids.filtered(
-                    lambda line: line.sequence == self.sequence - 1
+                    lambda l: l.sequence == self.sequence - 1
                 )
             )
             if float_is_zero(previous_line.amount_residual, digits):
@@ -796,8 +796,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
             [
                 line.amount
                 for line in self.dep_line_ids.filtered(
-                    lambda line: line.move_type == "depreciated"
-                    and not line.partial_dismissal
+                    lambda l: l.move_type == "depreciated" and not l.partial_dismissal
                 )
             ]
         )
@@ -805,14 +804,13 @@ class ReportDepreciationLineByYear(models.TransientModel):
             [
                 line.amount
                 for line in self.dep_line_ids.filtered(
-                    lambda line: line.move_type == "depreciated"
-                    and line.partial_dismissal
+                    lambda l: l.move_type == "depreciated" and l.partial_dismissal
                 )
             ]
         )
 
         prev_year_line = report_dep.report_depreciation_year_line_ids.filtered(
-            lambda line: line.sequence == self.sequence - 1
+            lambda l: l.sequence == self.sequence - 1
         )
         asset = self.report_depreciation_id.report_asset_id.asset_id
         fy_start = self.fiscal_year_id.date_from
@@ -868,8 +866,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
 
         type_mapping = {"in": {}, "out": {}}
         for dep_line in self.dep_line_ids.filtered(
-            lambda line: line.move_type in ("in", "out")
-            and line.depreciation_line_type_id
+            lambda l: l.move_type in ("in", "out") and l.depreciation_line_type_id
         ):
             dep_type = dep_line.depreciation_line_type_id
             if dep_type not in type_mapping[dep_line.move_type]:
@@ -881,7 +878,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
         if type_mapping["in"]:
             amount_in_detail = "; ".join(
                 [
-                    f"{dep_type.name}: {self.format_amount(amount)}"
+                    "{}: {}".format(dep_type.name, self.format_amount(amount))
                     for dep_type, amount in sorted(list(type_mapping["in"].items()))
                 ]
             )
@@ -889,7 +886,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
         if type_mapping["out"]:
             amount_out_detail = "; ".join(
                 [
-                    f"{dep_type.name}: {self.format_amount(amount)}"
+                    "{}: {}".format(dep_type.name, self.format_amount(amount))
                     for dep_type, amount in sorted(list(type_mapping["out"].items()))
                 ]
             )
@@ -900,7 +897,7 @@ class ReportDepreciationLineByYear(models.TransientModel):
         if start == end:
             year = str(start)
         else:
-            year = f"{start} - {end}"
+            year = "{} - {}".format(start, end)
 
         return {
             "amount_depreciable": amount_depreciable,
