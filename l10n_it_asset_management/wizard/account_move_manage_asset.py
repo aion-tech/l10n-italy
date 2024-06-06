@@ -472,9 +472,6 @@ class WizardAccountMoveManageAsset(models.TransientModel):
             dep_vals["line_ids"].append(Command.create(dep_line_vals))
 
             balance = dep_writeoff - residual
-            base_coeff = dep.base_coeff
-            if base_coeff:
-                balance *= base_coeff
             if not float_is_zero(balance, digits):
                 balance = round(balance, digits)
                 move_type = "gain" if balance > 0 else "loss"
