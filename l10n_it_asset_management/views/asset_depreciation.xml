@@ -70,6 +70,18 @@
                             name="loss_account_id"
                             attrs="{'readonly': [('state', '!=', 'non_depreciated')]}"
                         />
+                        <field
+                            name="depreciation_account_id"
+                            attrs="{'readonly': [('state', '!=', 'non_depreciated')]}"
+                        />
+                        <field
+                            name="gain_account_id"
+                            attrs="{'readonly': [('state', '!=', 'non_depreciated')]}"
+                        />
+                        <field
+                            name="loss_account_id"
+                            attrs="{'readonly': [('state', '!=', 'non_depreciated')]}"
+                        />
                     </group>
                     <group>
                         <field

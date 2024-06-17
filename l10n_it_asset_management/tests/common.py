@@ -368,3 +368,24 @@ class Common(TransactionCase):
         """Execute the asset management wizard on `move`."""
         wizard = self._create_asset_wizard(move, wizard_values=wizard_values)
         return wizard.link_asset()
+
+    def _link_asset_move(self, asset, move, link_management_type, wiz_values=None):
+        """Link `asset` to `move` with mode `link_management_type`.
+
+        `wiz_values` are values to be set in the wizard.
+        """
+        if wiz_values is None:
+            wiz_values = {}
+
+        wiz_action_values = move.open_wizard_manage_asset()
+        wiz_form = Form(
+            self.env["wizard.account.move.manage.asset"].with_context(
+                **wiz_action_values["context"]
+            )
+        )
+        wiz_form.management_type = link_management_type
+        wiz_form.asset_id = asset
+        for field_name, field_value in wiz_values.items():
+            setattr(wiz_form, field_name, field_value)
+        wiz = wiz_form.save()
+        return wiz.link_asset()

@@ -2,6 +2,7 @@
 # Copyright 2022 Simone Rubino - TAKOBI
 # Copyright 2023 Simone Rubino - Aion Tech
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
 from datetime import date
 
 from odoo import fields
