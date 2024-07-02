@@ -27,6 +27,13 @@ class TestGenerateFile(AccountTestInvoicingCommon):
         cls.bank_journal = cls.company_data["default_journal_bank"]
         cls.bank_journal.bank_account_id = cls.company_bank_account
 
+        cls.supplier_bank = cls.env["res.bank"].create(
+            {
+                "name": "Test supplier bank",
+                "bic": "TESTBICA",
+            }
+        )
+
         cls.supplier = cls.env["res.partner"].create(
             {
                 "name": "Test supplier",
@@ -34,6 +41,7 @@ class TestGenerateFile(AccountTestInvoicingCommon):
                     Command.create(
                         {
                             "acc_number": "IT48N0300203280543765183341",
+                            "bank_id": cls.supplier_bank.id,
                         }
                     ),
                 ],
