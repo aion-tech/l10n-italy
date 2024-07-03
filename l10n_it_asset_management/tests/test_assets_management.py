@@ -670,3 +670,43 @@ class TestAssets(Common):
         # Assert
         account_move = asset.depreciation_ids.line_ids.move_id
         self.assertEqual(account_move.journal_id, depreciate_asset_wizard.journal_id)
+
+    def test_entry_in_update_asset(self):
+        """An entry adding to the asset account
+        creates a positive accounting info."""
+        asset = self._create_asset()
+        added_amount = 100
+        entry = self._create_entry(asset.category_id.asset_account_id, added_amount)
+        # pre-condition
+        self.assertFalse(asset.asset_accounting_info_ids)
+
+        # Act
+        self._update_asset(entry, asset)
+
+        # Assert
+        accounting_info = asset.asset_accounting_info_ids
+        self.assertEqual(accounting_info.move_type, "in")
+        depreciation_info = asset.depreciation_ids
+        self.assertEqual(
+            depreciation_info.amount_residual, asset.purchase_amount + added_amount
+        )
+
+    def test_entry_out_update_asset(self):
+        """An entry removing from the asset account
+        creates a negative accounting info."""
+        asset = self._create_asset()
+        removed_amount = 100
+        entry = self._create_entry(asset.category_id.asset_account_id, -removed_amount)
+        # pre-condition
+        self.assertFalse(asset.asset_accounting_info_ids)
+
+        # Act
+        self._update_asset(entry, asset)
+
+        # Assert
+        accounting_info = asset.asset_accounting_info_ids
+        self.assertEqual(accounting_info.move_type, "out")
+        depreciation_info = asset.depreciation_ids
+        self.assertEqual(
+            depreciation_info.amount_residual, asset.purchase_amount - removed_amount
+        )
