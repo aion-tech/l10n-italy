@@ -156,8 +156,16 @@ class Common(TransactionCase):
                 ],
             }
         )
+        cls.bank_account = cls.env["account.account"].create(
+            {
+                "code": "TBA",
+                "name": "Test Bank Account",
+                "account_type": "asset_cash",
+            }
+        )
+        cls.env.user.groups_id += cls.env.ref("account.group_account_readonly")
 
-    def _create_asset(self, asset_date):
+    def _create_asset(self, asset_date=None):
         asset = self.env["asset.asset"].create(
             {
                 "name": "Test asset",
@@ -205,6 +213,35 @@ class Common(TransactionCase):
         purchase_invoice.action_post()
         self.assertEqual(purchase_invoice.state, "posted")
         return purchase_invoice
+
+    def _create_entry(self, account, amount, post=True):
+        """Create an entry that adds `amount` to `account`."""
+        entry_form = Form(self.env["account.move"])
+        with entry_form.line_ids.new() as asset_line:
+            asset_line.account_id = account
+            asset_line.debit = amount
+        with entry_form.line_ids.new() as bank_line:
+            bank_line.account_id = self.bank_account
+        entry = entry_form.save()
+
+        if post:
+            entry.action_post()
+
+        self.assertEqual(entry.move_type, "entry")
+        return entry
+
+    def _update_asset(self, entry, asset):
+        """Execute the wizard on `entry` to update `asset`."""
+        wizard_action = entry.open_wizard_manage_asset()
+        wizard_model = self.env[wizard_action["res_model"]]
+        wizard_context = wizard_action["context"]
+
+        wizard_form = Form(wizard_model.with_context(**wizard_context))
+        wizard_form.management_type = "update"
+        wizard_form.asset_id = asset
+        wizard = wizard_form.save()
+
+        return wizard.link_asset()
 
     def _create_sale_invoice(self, asset, amount=7000, post=True):
         sale_invoice = self.env["account.move"].create(
