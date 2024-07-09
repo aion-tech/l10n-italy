@@ -293,26 +293,45 @@ class AccountPaymentOrder(models.Model):
             "pain_xsd_file": payment_method.get_xsd_file_path(),
         }
 
-    def _l10n_it_sct_cbi_root_tags(self):
+    def _l10n_it_sct_cbi_root_tag(self):
         pain_flavor = self.payment_method_id.pain_version
         if pain_flavor == "CBIBdyPaymentRequest.00.04.01":
             root_xml_tag = "CBIBdyPaymentRequest"
+        elif pain_flavor == "CBIBdyCrossBorderPaymentRequest.00.01.01":
+            root_xml_tag = "CBIBdyCrossBorderPaymentRequest"
+        else:
+            raise self._l10n_it_sct_cbi_unsupported_pain_exception(pain_flavor)
+        return root_xml_tag
+
+    def _l10n_it_sct_cbi_generate_xml_root(self):
+        root_xml_tag = self._l10n_it_sct_cbi_root_tag()
+
+        nsmap = self.generate_pain_nsmap()
+        xml_root = etree.Element(root_xml_tag, nsmap=nsmap)
+        return xml_root
+
+    def _l10n_it_sct_cbi_payment_tags(self):
+        pain_flavor = self.payment_method_id.pain_version
+        if pain_flavor == "CBIBdyPaymentRequest.00.04.01":
             envel_xml_tag = "CBIEnvelPaymentRequest"
             pain_xml_tag = "CBIPaymentRequest"
         elif pain_flavor == "CBIBdyCrossBorderPaymentRequest.00.01.01":
-            root_xml_tag = "CBIBdyCrossBorderPaymentRequest"
             envel_xml_tag = "CBIEnvelCBICrossBorderPaymentRequest"
             pain_xml_tag = "CBICrossBorderPaymentRequestLogMsg"
         else:
             raise self._l10n_it_sct_cbi_unsupported_pain_exception(pain_flavor)
+        return envel_xml_tag, pain_xml_tag
 
-        nsmap = self.generate_pain_nsmap()
-        xml_root = etree.Element(root_xml_tag, nsmap=nsmap)
-        envel_root = etree.SubElement(xml_root, envel_xml_tag)
+    def _l10n_it_sct_cbi_generate_payment_root(self, parent_node):
+        envel_xml_tag, pain_xml_tag = self._l10n_it_sct_cbi_payment_tags()
+
+        envel_root = etree.SubElement(parent_node, envel_xml_tag)
         pain_root = etree.SubElement(envel_root, pain_xml_tag)
-        return pain_root, xml_root
+        return pain_root
 
-    def _l10n_it_sct_cbi_transaction_node(self, payment_info_node, line, gen_args):
+    def _l10n_it_sct_cbi_generate_transaction_block(
+        self, payment_info_node, line, gen_args
+    ):
         # C. Credit Transfer Transaction Info
         credit_transfer_transaction_info_node = etree.SubElement(
             payment_info_node, "CdtTrfTxInf"
@@ -426,7 +445,7 @@ class AccountPaymentOrder(models.Model):
         )
         return credit_transfer_transaction_info_node, line.amount
 
-    def _l10n_it_sct_cbi_payment_node(
+    def _l10n_it_sct_cbi_generate_payment_block(
         self, pain_root, transactions_key, transactions, gen_args
     ):
         # Payment
@@ -464,7 +483,7 @@ class AccountPaymentOrder(models.Model):
             (
                 transaction_node,
                 transaction_amount,
-            ) = self._l10n_it_sct_cbi_transaction_node(
+            ) = self._l10n_it_sct_cbi_generate_transaction_block(
                 payment_node, transaction, gen_args
             )
             transactions_amount += transaction_amount
@@ -478,10 +497,11 @@ class AccountPaymentOrder(models.Model):
         if self.payment_method_id.code == "sepa_cbi_credit_transfer":
             # Children of pain node must be in PMRQ namespace
             pain_namespace = xml_root.nsmap["PMRQ"]
-            pain_root, _xml_root = self._l10n_it_sct_cbi_root_tags()
-            pain_root = xml_root.find(f".//{pain_root.tag}")
-            for pain_child in pain_root.iterdescendants():
-                pain_child.tag = etree.QName(pain_namespace, tag=pain_child.tag)
+            _envel_xml_tag, pain_xml_tag = self._l10n_it_sct_cbi_payment_tags()
+            pain_roots = xml_root.findall(f".//{pain_xml_tag}")
+            for pain_root in pain_roots:
+                for pain_child in pain_root.iterdescendants():
+                    pain_child.tag = etree.QName(pain_namespace, tag=pain_child.tag)
         return super().finalize_sepa_file_creation(xml_root, gen_args)
 
     def generate_payment_file(self):
@@ -492,31 +512,33 @@ class AccountPaymentOrder(models.Model):
 
         gen_args = self._l10n_it_sct_cbi_gen_args()
 
-        pain_root, xml_root = self._l10n_it_sct_cbi_root_tags()
-
-        # Header
-        (
-            group_header_node,
-            transactions_number_node,
-            transactions_amount_node,
-        ) = self.generate_group_header_block(pain_root, gen_args)
+        xml_root = self._l10n_it_sct_cbi_generate_xml_root()
 
         transactions_number = 0
         transactions_amount = 0.0
         grouped_transactions = self._l10n_it_sct_cbi_group_transactions()
         for transactions_key, transactions in grouped_transactions.items():
+            pain_root = self._l10n_it_sct_cbi_generate_payment_root(xml_root)
+
+            # Header
+            (
+                group_header_node,
+                transactions_number_node,
+                transactions_amount_node,
+            ) = self.generate_group_header_block(pain_root, gen_args)
+
             (
                 payment_node,
                 payment_transactions_number,
                 payment_transactions_amount,
-            ) = self._l10n_it_sct_cbi_payment_node(
+            ) = self._l10n_it_sct_cbi_generate_payment_block(
                 pain_root, transactions_key, transactions, gen_args
             )
 
             transactions_number += payment_transactions_number
             transactions_amount += payment_transactions_amount
 
-        transactions_number_node.text = str(transactions_number)
-        transactions_amount_node.text = "%.2f" % transactions_amount
+            transactions_number_node.text = str(transactions_number)
+            transactions_amount_node.text = "%.2f" % transactions_amount
 
         return self.finalize_sepa_file_creation(xml_root, gen_args)
