@@ -72,6 +72,10 @@ class WizardAssetsGenerateDepreciations(models.TransientModel):
         default="year",
         required=True,
     )
+    period_count = fields.Integer(
+        string="Number of periods",
+        default=1,
+    )
     missing_fiscal_year_warning = fields.Text(
         compute="_compute_missing_fiscal_year_warning",
         help="Message to warn the user that some fiscal years are missing.",
@@ -138,7 +142,9 @@ class WizardAssetsGenerateDepreciations(models.TransientModel):
                 deps |= dep
         if deps:
             dep_lines = deps.generate_depreciation_lines(
-                self.date_dep, period=self.period
+                self.date_dep,
+                period=self.period,
+                period_count=self.period_count,
             )
             deps.post_generate_depreciation_lines(dep_lines)
         if self._context.get("reload_window"):

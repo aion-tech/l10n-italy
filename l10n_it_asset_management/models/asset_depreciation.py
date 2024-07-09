@@ -333,19 +333,23 @@ class AssetDepreciation(models.Model):
                 )
             )
 
-    def generate_depreciation_lines(self, dep_date, period=None):
+    def generate_depreciation_lines(self, dep_date, period=None, period_count=None):
         # Set new date within context if necessary
         self.check_before_generate_depreciation_lines(dep_date)
 
         new_lines = self.env["asset.depreciation.line"]
         for dep in self:
-            new_line = dep.generate_depreciation_lines_single(dep_date, period=period)
+            new_line = dep.generate_depreciation_lines_single(
+                dep_date, period=period, period_count=period_count
+            )
             if new_line:
                 new_lines |= new_line
 
         return new_lines
 
-    def generate_depreciation_lines_single(self, dep_date, period=None):
+    def generate_depreciation_lines_single(
+        self, dep_date, period=None, period_count=None
+    ):
         self.ensure_one()
         res = self.env["asset.depreciation.line"]
         if self.last_depreciation_date and self.last_depreciation_date > dep_date:
@@ -356,7 +360,9 @@ class AssetDepreciation(models.Model):
         dep = self.with_context(
             passed_fiscal_years=passed_fiscal_years, used_asset=self.asset_id.used
         )
-        dep_amount = dep.get_depreciation_amount(dep_date, period=period)
+        dep_amount = dep.get_depreciation_amount(
+            dep_date, period=period, period_count=period_count
+        )
         if not dep_amount:
             return res
         dep = dep.with_context(dep_amount=dep_amount)
@@ -441,7 +447,7 @@ class AssetDepreciation(models.Model):
             depreciable_amount = 0
         return depreciable_amount
 
-    def get_depreciation_amount(self, dep_date, period=None):
+    def get_depreciation_amount(self, dep_date, period=None, period_count=None):
         self.ensure_one()
         zero_dep_date = self.zero_depreciation_until
         if zero_dep_date and dep_date <= zero_dep_date:
@@ -449,7 +455,9 @@ class AssetDepreciation(models.Model):
 
         # Get depreciable amount, multiplier and digits
         amount = self.get_depreciable_amount(dep_date)
-        multiplier = self.get_depreciation_amount_multiplier(dep_date, period=period)
+        multiplier = self.get_depreciation_amount_multiplier(
+            dep_date, period=period, period_count=period_count
+        )
         digits = self.env["decimal.precision"].precision_get("Account")
         dep_amount = round(amount * multiplier, digits)
 
@@ -459,7 +467,9 @@ class AssetDepreciation(models.Model):
 
         return dep_amount
 
-    def get_depreciation_amount_multiplier(self, dep_date, period=None):
+    def get_depreciation_amount_multiplier(
+        self, dep_date, period=None, period_count=None
+    ):
         self.ensure_one()
 
         # Base multiplier
@@ -467,6 +477,9 @@ class AssetDepreciation(models.Model):
 
         if period == "month":
             multiplier /= 12
+
+        if period_count:
+            multiplier *= period_count
 
         # Update multiplier from depreciation mode data
         multiplier *= self.mode_id.get_depreciation_amount_multiplier()

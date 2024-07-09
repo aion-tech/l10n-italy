@@ -183,6 +183,7 @@ class Common(TransactionCase):
         asset,
         date_dep,
         period="year",
+        period_count=None,
         override_journal=None,
     ):
         if override_journal is None:
@@ -197,6 +198,7 @@ class Common(TransactionCase):
                 {
                     "date_dep": date_dep,
                     "period": period,
+                    "period_count": period_count,
                     "journal_id": override_journal.id,
                 }
             )
@@ -208,12 +210,14 @@ class Common(TransactionCase):
         asset,
         date_dep,
         period="year",
+        period_count=None,
         override_journal=None,
     ):
         wiz = self._depreciate_asset_wizard(
             asset,
             date_dep,
             period=period,
+            period_count=period_count,
             override_journal=override_journal,
         )
         wiz.do_generate()

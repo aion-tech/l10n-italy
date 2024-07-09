@@ -551,11 +551,13 @@ class TestAssets(Common):
         asset = self._create_asset(purchase_date)
         first_depreciation_date = date(2019, 1, 31)
         second_depreciation_date = date(2020, 1, 31)
+        third_depreciation_date = date(2021, 1, 31)
         self._generate_fiscal_years(
             asset.purchase_date,
             max(
                 first_depreciation_date,
                 second_depreciation_date,
+                third_depreciation_date,
             ),
         )
         civ_depreciation_type = self.env.ref(
@@ -584,6 +586,9 @@ class TestAssets(Common):
         # Act
         self._depreciate_asset(asset, first_depreciation_date, period="month")
         self._depreciate_asset(asset, second_depreciation_date, period="month")
+        self._depreciate_asset(
+            asset, third_depreciation_date, period="month", period_count=2
+        )
 
         # Assert
         self.assertRecordValues(
@@ -596,6 +601,10 @@ class TestAssets(Common):
                 {
                     "date": second_depreciation_date,
                     "amount": 10,
+                },
+                {
+                    "date": third_depreciation_date,
+                    "amount": 20,
                 },
             ],
         )

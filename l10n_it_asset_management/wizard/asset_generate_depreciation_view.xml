@@ -21,7 +21,18 @@
                         <i class="fa fa-warning" title="Missing fiscal years" />
                         <field name="missing_fiscal_year_warning" />
                     </div>
-                    <field name="period" />
+                    <label for="period" />
+                    <div class="o_row">
+                        <field
+                            name="period_count"
+                            attrs="{
+                                'invisible': [
+                                    ('period', '!=', 'month'),
+                                ],
+                            }"
+                        />
+                        <field name="period" />
+                    </div>
                     <field
                         name="type_ids"
                         options="{'no_create': True}"
