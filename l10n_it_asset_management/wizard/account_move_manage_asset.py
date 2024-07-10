@@ -21,7 +21,15 @@ class WizardAccountMoveManageAsset(models.TransientModel):
     def get_default_move_ids(self):
         return self._context.get("move_ids")
 
-    asset_id = fields.Many2one("asset.asset", string="Asset")
+    allowed_asset_ids = fields.Many2many(
+        comodel_name="asset.asset",
+        compute="_compute_allowed_asset_ids",
+    )
+    asset_id = fields.Many2one(
+        comodel_name="asset.asset",
+        domain="[('id', 'in', allowed_asset_ids),]",
+        string="Asset",
+    )
 
     asset_purchase_amount = fields.Monetary(string="Purchase Amount")
 
@@ -132,6 +140,18 @@ class WizardAccountMoveManageAsset(models.TransientModel):
         "partial_dismiss": lambda w: w.partial_dismiss_asset(),
         "update": lambda w: w.update_asset(),
     }
+
+    @api.depends(
+        "management_type",
+    )
+    def _compute_allowed_asset_ids(self):
+        all_assets = self.env["asset.asset"].search([])
+        for manage_asset in self:
+            if manage_asset.management_type == "partial_recharge":
+                allowed_assets = manage_asset.move_ids.reversed_entry_id.asset_ids
+            else:
+                allowed_assets = all_assets
+            manage_asset.allowed_asset_ids = allowed_assets
 
     @api.onchange("asset_id", "management_type")
     def onchange_depreciation_type_ids(self):
