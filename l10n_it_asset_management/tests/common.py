@@ -276,10 +276,11 @@ class Common(TransactionCase):
 
         return wizard.link_asset()
 
-    def _create_sale_invoice(self, asset, amount=7000, post=True):
+    def _create_sale_invoice(self, asset, amount=7000, invoice_date=None, post=True):
         sale_invoice = self.env["account.move"].create(
             {
                 "move_type": "out_invoice",
+                "invoice_date": invoice_date,
                 "partner_id": self.env.ref("base.partner_demo").id,
                 "journal_id": self.sale_journal.id,
                 "invoice_line_ids": [
@@ -297,11 +298,35 @@ class Common(TransactionCase):
             sale_invoice.action_post()
         return sale_invoice
 
+    def _refund_move(self, move, method="cancel", ref_date=None):
+        reverse_context = {
+            "active_model": move._name,
+            "active_ids": move.ids,
+        }
+        refund_wizard_form = Form(
+            self.env["account.move.reversal"].with_context(**reverse_context)
+        )
+        refund_wizard_form.reason = "test"
+        if ref_date:
+            refund_wizard_form.date_mode = "custom"
+            refund_wizard_form.date = ref_date
+        refund_wizard_form.refund_method = method
+        refund_wizard = refund_wizard_form.save()
+
+        refund_action = refund_wizard.reverse_moves()
+        refund_move = self.env[refund_action["res_model"]].browse(
+            refund_action["res_id"]
+        )
+        return refund_move
+
     def _civil_depreciate_asset(self, asset):
         # Keep only one civil depreciation
+        civil_depreciation_type = self.env.ref(
+            "l10n_it_asset_management.ad_type_civilistico"
+        )
         civil_depreciation = first(
             asset.depreciation_ids.filtered(
-                lambda d: d.type_id == self.civilistico_asset_dep_type
+                lambda d: d.type_id == civil_depreciation_type
             )
         )
         (asset.depreciation_ids - civil_depreciation).unlink()
@@ -410,9 +435,8 @@ class Common(TransactionCase):
         wizard = self._create_asset_wizard(move, wizard_values=wizard_values)
         return wizard.link_asset()
 
-    def _link_asset_move(self, asset, move, link_management_type, wiz_values=None):
-        """Link `asset` to `move` with mode `link_management_type`.
-
+    def _link_asset_move(self, move, link_management_type, wiz_values=None):
+        """Link `move` to an asset with mode `link_management_type`.
         `wiz_values` are values to be set in the wizard.
         """
         if wiz_values is None:
@@ -425,7 +449,6 @@ class Common(TransactionCase):
             )
         )
         wiz_form.management_type = link_management_type
-        wiz_form.asset_id = asset
         for field_name, field_value in wiz_values.items():
             setattr(wiz_form, field_name, field_value)
         wiz = wiz_form.save()

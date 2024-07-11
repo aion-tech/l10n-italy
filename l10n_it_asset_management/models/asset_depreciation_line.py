@@ -499,3 +499,13 @@ class AssetDepreciationLine(models.Model):
         )
         if to_create_move:
             to_create_move.generate_account_move()
+
+    def post_partial_recharge_asset(self):
+        dep = self.mapped("depreciation_id")
+        dep.ensure_one()
+        types = ("depreciated", "gain", "loss")
+        to_create_move = self.filtered(
+            lambda line: line.needs_account_move() and line.move_type in types
+        )
+        if to_create_move:
+            to_create_move.generate_account_move()

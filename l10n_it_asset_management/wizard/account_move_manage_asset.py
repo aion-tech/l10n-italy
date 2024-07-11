@@ -66,6 +66,7 @@ class WizardAccountMoveManageAsset(models.TransientModel):
     management_type = fields.Selection(
         [
             ("create", "Create New"),
+            ("partial_recharge", "Partial Recharge"),
             ("update", "Update Existing"),
             ("partial_dismiss", "Partial Dismiss"),
             ("dismiss", "Dismiss Asset"),
@@ -104,6 +105,12 @@ class WizardAccountMoveManageAsset(models.TransientModel):
 
     used = fields.Boolean()
 
+    recharge_date = fields.Date(
+        default=fields.Date.today(),
+    )
+    recharge_purchase_amount = fields.Monetary()
+    recharge_fund_amount = fields.Monetary()
+
     # Mapping between move journal type and depreciation line type
     _move_journal_type_2_dep_line_type = {
         "purchase": "in",
@@ -117,6 +124,7 @@ class WizardAccountMoveManageAsset(models.TransientModel):
     # Every method used in here must return an asset
     _management_type_2_method = {
         "create": lambda w: w.create_asset(),
+        "partial_recharge": lambda w: w.partial_recharge_asset(),
         "dismiss": lambda w: w.dismiss_asset(),
         "partial_dismiss": lambda w: w.partial_dismiss_asset(),
         "update": lambda w: w.update_asset(),
@@ -749,4 +757,135 @@ class WizardAccountMoveManageAsset(models.TransientModel):
         self.ensure_one()
         self.check_pre_update_asset()
         self.asset_id.write(self.get_update_asset_vals())
+        return self.asset_id
+
+    def check_pre_partial_recharge_asset(self):
+        self.ensure_one()
+        asset = self.asset_id
+        if not asset:
+            raise ValidationError(_("Please choose an asset before continuing!"))
+
+        move_lines = self.move_line_ids
+        if not move_lines:
+            raise ValidationError(
+                _(
+                    "At least one move line is needed"
+                    " to partial recharge asset %(asset)s!",
+                    asset=asset,
+                )
+            )
+
+        asset_account = asset.category_id.asset_account_id
+        if not all(line.account_id == asset_account for line in move_lines):
+            raise ValidationError(
+                _(
+                    "You need to choose move lines with account `%(ass_acc)s`"
+                    " if you need them to partial recharge asset `%(ass_name)s`!",
+                    ass_acc=asset_account.display_name,
+                    ass_name=asset.display_name,
+                )
+            )
+
+    def get_partial_recharge_asset_vals(self):
+        self.ensure_one()
+        asset = self.asset_id
+        currency = self.asset_id.currency_id
+        recharge_date = self.recharge_date
+        digits = self.env["decimal.precision"].precision_get("Account")
+        fund_amt = self.recharge_fund_amount
+        purchase_amt = self.recharge_purchase_amount
+
+        move = self.move_line_ids.mapped("move_id")
+        move_nums = move.name
+
+        writeoff = 0
+        for line in self.move_line_ids:
+            writeoff += line.currency_id._convert(
+                line.credit - line.debit, currency, line.company_id, line.date
+            )
+        writeoff = round(writeoff, digits)
+
+        vals = {"depreciation_ids": []}
+        for dep in asset.depreciation_ids:
+            dep_writeoff = writeoff
+            if dep.pro_rata_temporis:
+                dep_writeoff *= dep.get_pro_rata_temporis_multiplier(
+                    recharge_date, "std"
+                )
+
+            name = _(
+                "Partial recharge from move(s) %(move_nums)s",
+                move_nums=move_nums,
+            )
+
+            out_line_vals = {
+                "asset_accounting_info_ids": [
+                    Command.create(
+                        {
+                            "move_line_id": line.id,
+                            "relation_type": self.management_type,
+                        },
+                    )
+                    for line in self.move_line_ids
+                ],
+                "amount": purchase_amt,
+                "date": recharge_date,
+                "move_type": "in",
+                "name": name,
+            }
+            dep_line_vals = {
+                "asset_accounting_info_ids": [
+                    Command.create(
+                        {
+                            "move_line_id": line.id,
+                            "relation_type": self.management_type,
+                        },
+                    )
+                    for line in self.move_line_ids
+                ],
+                "amount": -fund_amt,
+                "date": recharge_date,
+                "move_type": "depreciated",
+                "name": name,
+            }
+
+            dep_vals = {
+                "line_ids": [
+                    Command.create(out_line_vals),
+                    Command.create(dep_line_vals),
+                ]
+            }
+
+            balance = purchase_amt + dep_writeoff - fund_amt
+            if not float_is_zero(balance, digits):
+                loss_gain_vals = {
+                    "asset_accounting_info_ids": [
+                        Command.create(
+                            {
+                                "move_line_id": line.id,
+                                "relation_type": self.management_type,
+                            },
+                        )
+                        for line in self.move_line_ids
+                    ],
+                    "amount": abs(balance),
+                    "date": recharge_date,
+                    "move_type": "gain" if balance > 0 else "loss",
+                    "name": name,
+                }
+                dep_vals["line_ids"].append(Command.create(loss_gain_vals))
+
+            vals["depreciation_ids"].append(Command.update(dep.id, dep_vals))
+        return vals
+
+    def partial_recharge_asset(self):
+        """Recharge asset partially and return it."""
+        self.ensure_one()
+        self.check_pre_partial_recharge_asset()
+        old_dep_lines = self.asset_id.mapped("depreciation_ids.line_ids")
+        self.asset_id.write(self.get_partial_recharge_asset_vals())
+
+        for dep in self.asset_id.depreciation_ids:
+            (dep.line_ids - old_dep_lines).post_partial_dismiss_asset()
+
         return self.asset_id

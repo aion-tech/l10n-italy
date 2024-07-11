@@ -98,7 +98,7 @@ class TestAssetDepreciation(Common):
         self.assertEqual(asset_depreciation.amount_residual, depreciated_amount)
         depreciation_lines = asset_depreciation.line_ids
         sale_invoice = self._create_sale_invoice(asset, amount=sale_price)
-        self._link_asset_move(asset, sale_invoice, "dismiss")
+        self._link_asset_move(sale_invoice, "dismiss", wiz_values={"asset_id": asset})
 
         # Assert: Loss is proportional to `depreciation_base_coeff`
         depreciation_lines = asset_depreciation.line_ids - depreciation_lines
@@ -157,7 +157,9 @@ class TestAssetDepreciation(Common):
         purchase_invoice = self._create_purchase_invoice(
             update_date, amount=update_price
         )
-        self._link_asset_move(asset, purchase_invoice, "update")
+        self._link_asset_move(
+            purchase_invoice, "update", wiz_values={"asset_id": asset}
+        )
 
         # Assert: 'In' is proportional to `depreciation_base_coeff`
         depreciation_lines = asset_depreciation.line_ids - depreciation_lines
@@ -210,10 +212,10 @@ class TestAssetDepreciation(Common):
         depreciation_lines = asset_depreciation.line_ids
         sale_invoice = self._create_sale_invoice(asset, amount=sale_price)
         self._link_asset_move(
-            asset,
             sale_invoice,
             "partial_dismiss",
             wiz_values={
+                "asset_id": asset,
                 "depreciated_fund_amount": depreciated_fund_amount,
                 "asset_purchase_amount": asset_purchase_amount,
             },
