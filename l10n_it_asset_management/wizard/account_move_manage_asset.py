@@ -835,6 +835,7 @@ class WizardAccountMoveManageAsset(models.TransientModel):
                 "date": recharge_date,
                 "move_type": "in",
                 "name": name,
+                "partial_recharge": True,
             }
             dep_line_vals = {
                 "asset_accounting_info_ids": [
@@ -846,10 +847,11 @@ class WizardAccountMoveManageAsset(models.TransientModel):
                     )
                     for line in self.move_line_ids
                 ],
-                "amount": -fund_amt,
+                "amount": fund_amt,
                 "date": recharge_date,
                 "move_type": "depreciated",
                 "name": name,
+                "partial_recharge": True,
             }
 
             dep_vals = {
@@ -875,6 +877,7 @@ class WizardAccountMoveManageAsset(models.TransientModel):
                     "date": recharge_date,
                     "move_type": "gain" if balance > 0 else "loss",
                     "name": name,
+                    "partial_recharge": True,
                 }
                 dep_vals["line_ids"].append(Command.create(loss_gain_vals))
 
@@ -889,6 +892,6 @@ class WizardAccountMoveManageAsset(models.TransientModel):
         self.asset_id.write(self.get_partial_recharge_asset_vals())
 
         for dep in self.asset_id.depreciation_ids:
-            (dep.line_ids - old_dep_lines).post_partial_dismiss_asset()
+            (dep.line_ids - old_dep_lines).post_partial_recharge_asset()
 
         return self.asset_id

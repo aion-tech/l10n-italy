@@ -768,6 +768,40 @@ class TestAssets(Common):
                 "asset_purchase_amount": asset_fund_amount,
             },
         )
+        civ_depreciation_lines = civ_depreciation.line_ids
+        self.assertRecordValues(
+            civ_depreciation_lines.sorted("move_type"),
+            [
+                {
+                    "move_type": "depreciated",
+                    "amount": -1000.0,
+                },
+                {
+                    "move_type": "gain",
+                    "amount": 8000.0,
+                },
+                {
+                    "move_type": "out",
+                    "amount": 1000.0,
+                },
+            ],
+        )
+        civ_depreciation_move_lines = civ_depreciation_lines.filtered(
+            lambda cdl: cdl.move_type == "depreciated"
+        ).move_id.line_ids
+        self.assertRecordValues(
+            civ_depreciation_move_lines.sorted("balance"),
+            [
+                {
+                    "account_id": asset.category_id.asset_account_id.id,
+                    "balance": -1000,
+                },
+                {
+                    "account_id": asset.category_id.fund_account_id.id,
+                    "balance": 1000,
+                },
+            ],
+        )
         self.assertEqual(
             civ_depreciation.amount_depreciable_updated,
             purchase_amount - asset_account_amount,
@@ -786,6 +820,40 @@ class TestAssets(Common):
                 "recharge_purchase_amount": recharge_purchase_amount,
                 "recharge_fund_amount": recharge_fund_amount,
             },
+        )
+        civ_depreciation_lines = civ_depreciation.line_ids - civ_depreciation_lines
+        self.assertRecordValues(
+            civ_depreciation_lines.sorted("move_type"),
+            [
+                {
+                    "move_type": "depreciated",
+                    "amount": 1000.0,
+                },
+                {
+                    "move_type": "in",
+                    "amount": 1000.0,
+                },
+                {
+                    "move_type": "loss",
+                    "amount": 8000.0,
+                },
+            ],
+        )
+        civ_depreciation_move_lines = civ_depreciation_lines.filtered(
+            lambda cdl: cdl.move_type == "depreciated"
+        ).move_id.line_ids
+        self.assertRecordValues(
+            civ_depreciation_move_lines.sorted("balance"),
+            [
+                {
+                    "account_id": asset.category_id.fund_account_id.id,
+                    "balance": -1000,
+                },
+                {
+                    "account_id": asset.category_id.asset_account_id.id,
+                    "balance": 1000,
+                },
+            ],
         )
         self.assertEqual(
             civ_depreciation.amount_depreciable_updated,
