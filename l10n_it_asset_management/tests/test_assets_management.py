@@ -791,3 +791,22 @@ class TestAssets(Common):
             civ_depreciation.amount_depreciable_updated,
             purchase_amount,
         )
+
+    def test_create_category_code_sequence(self):
+        """If the category has a "Code Sequence",
+        it is used for created assets."""
+        # Arrange
+        category = self.asset_category_1
+        sequence = self.env["ir.sequence"].create(
+            {
+                "name": "Test Sequence",
+            }
+        )
+        sequence_next = sequence.number_next
+        category.code_sequence_id = sequence
+
+        # Act
+        asset = self._create_asset()
+
+        # Assert
+        self.assertEqual(asset.code, str(sequence_next))
