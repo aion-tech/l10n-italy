@@ -5,7 +5,7 @@
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.fields import Command
+from odoo.fields import Command, first
 from odoo.tools.float_utils import float_compare, float_is_zero
 
 
@@ -142,6 +142,10 @@ class WizardAccountMoveManageAsset(models.TransientModel):
                 )
             else:
                 self.depreciation_type_ids = False
+        elif self.management_type == "partial_recharge":
+            reversed_assets = self.move_ids.reversed_entry_id.asset_ids
+            if reversed_assets and self.asset_id not in reversed_assets:
+                self.asset_id = first(reversed_assets)
         else:
             self.depreciation_type_ids = False
         if self.asset_id:
