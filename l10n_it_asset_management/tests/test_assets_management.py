@@ -766,15 +766,16 @@ class TestAssets(Common):
             sale_invoice, ref_date=datetime.date(2020, month=7, day=1)
         )
         recharge_purchase_amount = recharge_fund_amount = 1000
-        self._link_asset_move(
+        wizard = self._get_move_asset_wizard(
             sale_refund,
             "partial_recharge",
             wiz_values={
-                "asset_id": asset,
                 "recharge_purchase_amount": recharge_purchase_amount,
                 "recharge_fund_amount": recharge_fund_amount,
             },
         )
+        wizard.link_asset()
+        self.assertEqual(wizard.asset_id, asset)
         civ_depreciation_lines = civ_depreciation.line_ids - civ_depreciation_lines
         self.assertRecordValues(
             civ_depreciation_lines.sorted("move_type"),
