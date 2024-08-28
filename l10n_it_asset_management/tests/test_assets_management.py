@@ -879,3 +879,50 @@ class TestAssets(Common):
 
         # Assert
         self.assertEqual(asset.code, str(sequence_next))
+
+    def test_same_asset_report_residual_partial_depreciation(self):
+        """
+        Partially depreciate an asset,
+        the residual value in the asset and in the report are the same.
+        """
+        # Arrange
+        purchase_date = date(2019, 1, 1)
+        purchase_amount = 1000
+        sale_date = date(2020, 6, 15)
+        sale_amount = 500
+        partial_dismiss_purchase_amount = 600
+        partial_dismiss_fund_amount = 0
+        report_date = date(2021, 12, 31)
+        expected_residual_amount = 400
+
+        asset = self._create_asset(asset_date=purchase_date)
+        sale_invoice = self._create_sale_invoice(
+            asset, amount=sale_amount, invoice_date=sale_date
+        )
+        self._link_asset_move(
+            sale_invoice,
+            "partial_dismiss",
+            wiz_values={
+                "asset_id": asset,
+                "asset_purchase_amount": partial_dismiss_purchase_amount,
+                "depreciated_fund_amount": partial_dismiss_fund_amount,
+            },
+        )
+        # pre-condition
+        self.assertEqual(asset.purchase_amount, purchase_amount)
+        self.assertEqual(
+            asset.depreciation_ids.amount_residual, expected_residual_amount
+        )
+
+        # Act
+        self._generate_fiscal_years(purchase_date, report_date)
+        report = self._get_report(report_date, "journal")
+
+        # Assert
+        asset_report = report.report_asset_ids.filtered(lambda ar: ar.asset_id == asset)
+        asset_report_depreciation_line = (
+            asset_report.report_depreciation_ids.report_depreciation_year_line_ids
+        )
+        self.assertEqual(
+            asset_report_depreciation_line.amount_residual, expected_residual_amount
+        )
