@@ -15,7 +15,44 @@
                     -->
                     <t t-foreach="statement.date_range_ids" t-as="period">
                            <h3><span>Summary</span> <span t-esc="period.name" /> </h3>
+                    <t t-foreach="statement.journal_group_ids" t-as="journal_group">
+                        <t
+                            t-foreach="journal_group.included_journal_ids"
+                            t-as="journal"
+                        >
+                            <h3>
+                                <span t-esc="journal.name" />
+                                [<span t-esc="journal_group.name" />]
+                            </h3>
+                            <!-- Purchase -->
+                            <t
+                                t-if="journal.type == 'purchase'"
+                                t-call="account_vat_period_end_statement.report_vatperiodendstatement_tax_code"
+                            >
+                                <t
+                                    t-set="tax_code_amounts"
+                                    t-value="tax_amounts(period.id, tax_ids=[l.tax_id.id for l in statement.credit_vat_account_line_ids], registry_type='supplier', journal_ids=journal.ids)"
+                                />
+                                <t t-set="tax_code_type" t-value="'credit'" />
+                                <t t-set="tax_code_section" t-value="'purchase'" />
+                            </t>
 
+                            <!-- Sale -->
+                            <t
+                                t-if="journal.type == 'sale'"
+                                t-call="account_vat_period_end_statement.report_vatperiodendstatement_tax_code"
+                            >
+                                <t
+                                    t-set="tax_code_amounts"
+                                    t-value="tax_amounts(period.id, tax_ids=[l.tax_id.id for l in statement.debit_vat_account_line_ids], registry_type='customer', journal_ids=journal.ids)"
+                                />
+                                <t t-set="tax_code_type" t-value="'debit'" />
+                                <t t-set="tax_code_section" t-value="'sale'" />
+                            </t>
+                        </t>
+                    </t>
+
+                    <h3 t-if="statement.journal_group_ids">All Journals</h3>
                            <!-- Purchase -->
                            <t
                         t-set="tax_code_amounts"

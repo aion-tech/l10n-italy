@@ -346,6 +346,11 @@ class AccountVatPeriodEndStatement(models.Model):
         string="Accounts filter",
         domain=lambda self: self._get_domain_account(),
     )
+    journal_group_ids = fields.Many2many(
+        comodel_name="account.journal.group",
+        string="Journal groups",
+        help="The report will show amounts for the groups and journals selected.",
+    )
 
     def _get_domain_account(self):
         domain = [("vat_statement_account_id", "!=", False)]

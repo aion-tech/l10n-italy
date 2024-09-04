@@ -2,7 +2,7 @@
 #  Copyright 2022 Simone Rubino - TAKOBI
 #  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import fields
+from odoo import Command, fields
 from odoo.tests import tagged
 
 from .common import TestVATStatementCommon
@@ -225,3 +225,53 @@ class TestTax(TestVATStatementCommon):
             other_statement.previous_credit_vat_amount,
             -other_last_year_statement.authority_vat_amount,
         )
+
+    def test_report_journal_groups(self):
+        """Journal groups are shown in the report."""
+        date_range = self.current_period
+        bill = self.init_invoice(
+            "in_invoice",
+            invoice_date=self.recent_date,
+            amounts=[500],
+            taxes=self.account_tax_22_credit,
+            post=True,
+        )
+        bill_journal = bill.journal_id
+        invoice = self.init_invoice(
+            "out_invoice",
+            invoice_date=self.recent_date,
+            amounts=[1000],
+            taxes=self.account_tax_22,
+            post=True,
+        )
+        invoice_journal = invoice.journal_id
+        journal_group = self.env["account.journal.group"].create(
+            {
+                "name": "Test group",
+                "included_journal_ids": [
+                    Command.set((bill_journal + invoice_journal).ids),
+                ],
+            }
+        )
+        statement = self._get_statement(
+            date_range,
+            self.last_year_date,
+            self.env["account.account"].browse(),
+        )
+        statement.journal_group_ids = journal_group
+        # pre-condition
+        self.assertEqual(
+            statement.journal_group_ids.included_journal_ids,
+            bill_journal + invoice_journal,
+        )
+
+        # Act
+        report_content, report_type = self.env["ir.actions.report"]._render_qweb_html(
+            "account_vat_period_end_statement.report_vat_statement", statement.ids
+        )
+
+        # Assert
+        report_content = report_content.decode()
+        self.assertIn(bill_journal.name, report_content)
+        self.assertIn(invoice_journal.name, report_content)
+        self.assertIn(journal_group.name, report_content)
