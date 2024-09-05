@@ -81,6 +81,10 @@ Contributors
 
   * Simone Rubino <sir@takobi.online>
 
+-  `Aion Tech <https://aiontech.company/>`__:
+
+   -  Simone Rubino <simone.rubino@aion-tech.it>
+
 Other credits
 ~~~~~~~~~~~~~
 
