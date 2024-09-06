@@ -3,7 +3,10 @@
 
 import logging
 import re
+import warnings
 from datetime import datetime
+
+import psycopg2
 
 from odoo import api, fields, models, registry
 from odoo.exceptions import UserError
@@ -537,16 +540,13 @@ class WizardImportFatturapa(models.TransientModel):
         return product
 
     def adjust_accounting_data(self, product, line_vals):
-        account = self.get_credit_account(product)
-        line_vals["account_id"] = account.id
-
         new_tax = None
         if len(product.product_tmpl_id.supplier_taxes_id) == 1:
             new_tax = product.product_tmpl_id.supplier_taxes_id[0]
-        elif len(account.tax_ids) == 1:
-            new_tax = account.tax_ids[0]
-        line_tax_id = line_vals.get("tax_ids") and line_vals["tax_ids"][0][2][0]
-        line_tax = self.env["account.tax"].browse(line_tax_id)
+        line_tax = self.env["account.tax"]
+        if line_vals.get("tax_ids") and line_vals["tax_ids"][0] == fields.Command.SET:
+            line_tax_id = line_vals["tax_ids"][0][2][0]
+            line_tax = self.env["account.tax"].browse(line_tax_id)
         if new_tax and line_tax and new_tax != line_tax:
             if new_tax._get_tax_amount() != line_tax._get_tax_amount():
                 self.log_inconsistency(
@@ -564,10 +564,16 @@ class WizardImportFatturapa(models.TransientModel):
     # move_line.tax_ids
     # move_line.name
     # move_line.sequence
-    # move_line.account_id
     # move_line.price_unit
     # move_line.quantity
     def _prepareInvoiceLineAliquota(self, credit_account_id, line, nline):
+        if credit_account_id:
+            warnings.warn(
+                "The `credit_account_id` argument is deprecated "
+                "because the account is automatically computed from the move line.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         retLine = {}
         account_taxes = self.get_account_taxes(line.AliquotaIVA, line.Natura)
         if account_taxes:
@@ -577,27 +583,31 @@ class WizardImportFatturapa(models.TransientModel):
             {
                 "name": "Riepilogo Aliquota {}".format(line.AliquotaIVA),
                 "sequence": nline,
-                "account_id": credit_account_id,
-                "price_unit": float(line.ImponibileImporto),
+                "price_unit": float(abs(line.ImponibileImporto)),
             }
         )
         return retLine
 
     # move_line.name
     # move_line.sequence
-    # move_line.account_id
     # move_line.price_unit
     # move_line.quantity
     # move_line.discount
     # move_line.admin_ref
     # move_line.invoice_line_tax_wt_ids
     def _prepareInvoiceLine(self, credit_account_id, line, wt_founds=False):
+        if credit_account_id:
+            warnings.warn(
+                "The `credit_account_id` argument is deprecated "
+                "because the account is automatically computed from the move line.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         retLine = self._prepare_generic_line_data(line)
         retLine.update(
             {
                 "name": line.Descrizione,
                 "sequence": int(line.NumeroLinea),
-                "account_id": credit_account_id,
                 "price_unit": float(line.PrezzoUnitario),
                 "exclude_from_invoice_tab": False,
             }
@@ -968,52 +978,13 @@ class WizardImportFatturapa(models.TransientModel):
         return einvoiceline
 
     def get_credit_account(self, product=None):
-        """
-        Try to get default credit account for invoice line looking in
-
-        1) product (if provided)
-        2) purchase journal
-        3) company default.
-
-        :param product: Product whose expense account will be used
-        :return: The account found
-        """
-        credit_account = self.env["account.account"].browse()
-
-        # If there is a product, get its default expense account
-        if product:
-            template = product.product_tmpl_id
-            accounts_dict = template.get_product_accounts()
-            credit_account = accounts_dict["expense"]
-
-        company = self.env.company
-        # Search in purchase journal
-        journal = self.get_purchase_journal(company)
-        if not credit_account:
-            credit_account = journal.default_account_id
-
-        # Search in company defaults
-        if not credit_account:
-            credit_account = (
-                self.env["ir.property"]
-                .with_company(company)
-                ._get("property_account_expense_categ_id", "product.category")
-            )
-
-        if not credit_account:
-            raise UserError(
-                _(
-                    "Please configure Default Credit Account "
-                    "in Journal '{journal}' "
-                    "or check default expense account "
-                    "for company '{company}'."
-                ).format(
-                    journal=journal.display_name,
-                    company=company.display_name,
-                )
-            )
-
-        return credit_account
+        warnings.warn(
+            "The `get_credit_account` method is deprecated "
+            "because the account is automatically computed from the move line.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.env["account.account"].browse()
 
     def invoiceCreate(self, fatt, fatturapa_attachment, FatturaBody, partner_id):
         partner_model = self.env["res.partner"]
@@ -1110,21 +1081,23 @@ class WizardImportFatturapa(models.TransientModel):
         # 2.1.1.5
         wt_founds = self.set_withholding_tax(FatturaBody, invoice_data)
 
-        self.set_e_invoice_lines(FatturaBody, invoice_data)
-
-        invoice = invoice_model.create(invoice_data)
+        invoice = self.env["account.move"].create(invoice_data)
 
         invoice_lines = []
         # 2.2.1
         invoice_lines.extend(
             self.set_invoice_line_ids(
-                FatturaBody, credit_account.id, partner, wt_founds, invoice
+                FatturaBody,
+                False,
+                partner,
+                found_withholding_taxes,
+                invoice,
             )
         )
 
         # 2.1.1.7
         invoice_lines.extend(
-            self.set_welfares_fund(FatturaBody, credit_account.id, invoice, wt_founds)
+            self.set_welfares_fund(FatturaBody, False, invoice, found_withholding_taxes)
         )
 
         # 2.1.1.10
@@ -1505,6 +1478,13 @@ class WizardImportFatturapa(models.TransientModel):
         return wt_founds
 
     def set_welfares_fund(self, FatturaBody, credit_account_id, invoice, wt_founds):
+        if credit_account_id:
+            warnings.warn(
+                "The `credit_account_id` argument is deprecated "
+                "because the account is automatically computed from the move line.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         invoice_line_model = self.env["account.move.line"]
         invoice_line_ids = []
         if self.e_invoice_detail_level == "2":
@@ -1527,7 +1507,6 @@ class WizardImportFatturapa(models.TransientModel):
                             "name": _("Welfare Fund: %s") % welfareLine.TipoCassa,
                             "price_unit": float(welfareLine.ImportoContributoCassa),
                             "move_id": invoice.id,
-                            "account_id": credit_account_id,
                             "quantity": 1,
                         }
                     )
@@ -1642,6 +1621,13 @@ class WizardImportFatturapa(models.TransientModel):
     def set_invoice_line_ids(
         self, FatturaBody, credit_account_id, partner, wt_founds, invoice
     ):
+        if credit_account_id:
+            warnings.warn(
+                "The `credit_account_id` argument is deprecated "
+                "because the account is automatically computed from the move line.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         invoice_lines = []
         invoice_line_model = self.env["account.move.line"]
         if self.e_invoice_detail_level == "1":
@@ -1698,11 +1684,29 @@ class WizardImportFatturapa(models.TransientModel):
                 )
 
     def create_and_get_line_id(self, invoice_line_ids, invoice_line_model, upd_vals):
-        invoice_line_id = (
-            invoice_line_model.with_context(check_move_validity=False)
-            .create(upd_vals)
-            .id
-        )
+        try:
+            with self.env.cr.savepoint():
+                invoice_line_id = (
+                    invoice_line_model.with_context(check_move_validity=False)
+                    .create(upd_vals)
+                    .id
+                )
+        except psycopg2.errors.CheckViolation as cv:
+            if (
+                cv.diag.constraint_name
+                == "account_move_line_check_accountable_required_fields"
+            ):
+                move = self.env["account.move"].browse(upd_vals["move_id"])
+                journal = move.journal_id
+                if journal:
+                    raise UserError(
+                        _(
+                            "Please configure Default Credit Account "
+                            "in Journal %(journal)s'.",
+                            journal=journal.display_name,
+                        )
+                    ) from cv
+            raise cv
         invoice_line_ids.append(invoice_line_id)
 
     def _set_decimal_precision(self, precision_name, field_name):
