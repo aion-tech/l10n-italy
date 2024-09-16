@@ -34,10 +34,9 @@ class FatturaElettronicaController(Controller):
     def pdf_preview(self, attachment_id, **data):
         attach = request.env["ir.attachment"].browse(int(attachment_id))
         allowed_company_ids = self._get_allowed_company_ids()
-        fatturapa_attachment_model = request.env["fatturapa.attachment"]
-        html = fatturapa_attachment_model.with_context(
+        html = attach.with_context(
             allowed_company_ids=allowed_company_ids,
-        ).get_fattura_elettronica_preview(attach)
+        ).get_fattura_elettronica_preview()
         pdf = request.env["ir.actions.report"]._run_wkhtmltopdf([html])
 
         pdfhttpheaders = [
