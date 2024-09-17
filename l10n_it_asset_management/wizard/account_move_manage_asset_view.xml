@@ -55,6 +55,7 @@
                                 placeholder="Asset Name"
                                 attrs="{'invisible': [('management_type', '!=', 'create')], 'required': [('management_type', '=', 'create')]}"
                             />
+                            <field name="allowed_asset_ids" invisible="True" />
                             <field
                                 name="asset_id"
                                 placeholder="Choose Your Asset"

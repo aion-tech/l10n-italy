@@ -823,6 +823,7 @@ class TestAssets(Common):
         )
         wizard.link_asset()
         self.assertEqual(wizard.asset_id, asset)
+        self.assertEqual(wizard.allowed_asset_ids, asset)
         civ_depreciation_lines = civ_depreciation.line_ids - civ_depreciation_lines
         self.assertRecordValues(
             civ_depreciation_lines.sorted("move_type"),
