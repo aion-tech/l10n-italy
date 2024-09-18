@@ -120,7 +120,7 @@ class AccountPartialReconcile(models.Model):
                 )
             ):
                 # and not wt_existing_moves\
-                reconcile.generate_wt_moves(is_wt_move)
+                reconcile.generate_wt_moves()
 
         return reconcile
 
