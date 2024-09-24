@@ -27,6 +27,8 @@ class VatPeriodEndStatementReport(models.AbstractModel):
             "account_vat_amounts": self._get_account_vat_amounts,
             "formatLang": formatLang,
             "env": self.env,
+            "sum_tax_code_amounts": self.sum_tax_code_amounts,
+            "all_journal_groups": self.env["account.journal.group"].search([]),
         }
         return vals
 
@@ -36,6 +38,25 @@ class VatPeriodEndStatementReport(models.AbstractModel):
         if statement_id:
             statement = statement_obj.browse(statement_id)
         return statement
+
+    @api.model
+    def sum_tax_code_amounts(self, tax_code_amounts, other_tax_code_amounts):
+        """Sum two tax amounts dictionaries."""
+        sum_tax_code_amounts = tax_code_amounts.copy()
+        for code, amounts in other_tax_code_amounts.items():
+            sum_amounts = sum_tax_code_amounts.get(code)
+            if sum_amounts is None:
+                sum_tax_code_amounts[code] = amounts
+            else:
+                for amount_name in sum_amounts:
+                    if amount_name in [
+                        "vat",
+                        "vat_deductible",
+                        "vat_undeductible",
+                        "base",
+                    ]:
+                        sum_amounts[amount_name] += amounts[amount_name]
+        return sum_tax_code_amounts
 
     def _get_taxes_amounts(
         self, period_id, tax_ids=None, registry_type="customer", journal_ids=None
