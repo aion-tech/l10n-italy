@@ -42,6 +42,7 @@
         "views/slip_report.xml",
         "views/riba_detail_view.xml",
         "views/wizard_presentation.xml",
+        "wizard/wizard_riba_multiple_payment_views.xml",
     ],
     "demo": ["demo/riba_demo.xml"],
     "installable": True,
