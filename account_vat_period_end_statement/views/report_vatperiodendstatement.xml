@@ -23,7 +23,23 @@
                     <t t-set="grouped_sale_tax_code_amounts" t-value="{}" />
                     <t t-foreach="statement.journal_group_ids" t-as="journal_group">
                         <t
-                            t-foreach="journal_group.included_journal_ids"
+                            t-set="group_journals"
+                            t-value="journal_group.included_journal_ids"
+                        />
+                        <t
+                            t-set="purchase_group_journals"
+                            t-value="group_journals.filtered(lambda j: j.type == 'purchase')"
+                        />
+                        <t
+                            t-set="sale_group_journals"
+                            t-value="group_journals.filtered(lambda j: j.type == 'sale')"
+                        />
+                        <t
+                            t-set="other_group_journals"
+                            t-value="group_journals - (purchase_group_journals + sale_group_journals)"
+                        />
+                        <t
+                            t-foreach="purchase_group_journals + sale_group_journals + other_group_journals"
                             t-as="journal"
                         >
                             <h3>
