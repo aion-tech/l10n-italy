@@ -361,11 +361,31 @@ class WizardGiornaleReportlab(models.TransientModel):
             date = Paragraph(format_date(self.env, line["date"]), style_name)
             move = Paragraph(line["move_name"], style_name)
             account = Paragraph(account_name, style_name)
-            name = (
-                Paragraph(line["first_move_line_name"], style_name)
-                if line["first_move_line_name"]
-                else Paragraph("", style_name)
+            name = ""
+            account_id = self.env["account.account"].search(
+                [
+                    ("code", "=", line["account_code"]),
+                    ("name", "=", line["account_name"]),
+                ]
             )
+            if account_id.account_type in [
+                "asset_receivable",
+                "liability_payable",
+            ]:
+                move_id = self.env["account.move"].search(
+                    [
+                        ("name", "=", line["move_name"]),
+                        ("date", "=", line["date"]),
+                    ]
+                )
+                if move_id.partner_id:
+                    name = Paragraph(str(move_id.partner_id.name or ""), style_name)
+            if not name:
+                name = (
+                    Paragraph(line["first_move_line_name"], style_name)
+                    if line["first_move_line_name"]
+                    else Paragraph("", style_name)
+                )
             ref = Paragraph(line["ref"], style_name)
             # dato che nel SQL ho la somma dei crediti e debiti potrei avere
             # che un conto ha sia debito che credito
