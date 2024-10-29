@@ -134,8 +134,6 @@ class WizardGiornaleReportlab(models.TransientModel):
                 aa.code AS account_code,
                 aa.name AS account_name,
                 COALESCE(am.ref, '') AS ref,
-                first_aml.name AS first_move_line_name,
-                    -- This will hold the first aml.name
                 SUM(aml.debit) AS debit,
                 SUM(aml.credit) AS credit
             FROM
@@ -328,6 +326,12 @@ class WizardGiornaleReportlab(models.TransientModel):
         ]
         return initial_balance_data
 
+    def _compute_aml_grouped_name(self):
+        """
+        When the account move lines are grouped, the "Name" column is left empty.
+        This method can be inherited to compute it as desired."""
+        return ""
+
     def get_grupped_final_tables_report_giornale(
         self, list_grupped_line, tables, start_row, width_available
     ):
@@ -361,31 +365,7 @@ class WizardGiornaleReportlab(models.TransientModel):
             date = Paragraph(format_date(self.env, line["date"]), style_name)
             move = Paragraph(line["move_name"], style_name)
             account = Paragraph(account_name, style_name)
-            name = ""
-            account_id = self.env["account.account"].search(
-                [
-                    ("code", "=", line["account_code"]),
-                    ("name", "=", line["account_name"]),
-                ]
-            )
-            if account_id.account_type in [
-                "asset_receivable",
-                "liability_payable",
-            ]:
-                move_id = self.env["account.move"].search(
-                    [
-                        ("name", "=", line["move_name"]),
-                        ("date", "=", line["date"]),
-                    ]
-                )
-                if move_id.partner_id:
-                    name = Paragraph(str(move_id.partner_id.name or ""), style_name)
-            if not name:
-                name = (
-                    Paragraph(line["first_move_line_name"], style_name)
-                    if line["first_move_line_name"]
-                    else Paragraph("", style_name)
-                )
+            name = Paragraph(self._compute_aml_grouped_name(), style_name)
             ref = Paragraph(line["ref"], style_name)
             # dato che nel SQL ho la somma dei crediti e debiti potrei avere
             # che un conto ha sia debito che credito
