@@ -1,9 +1,11 @@
 # Copyright 2018 Gianmarco Conte (gconte@dinamicheaziendali.it)
 # Copyright 2022 Giuseppe Borruso (gborruso@dinamicheaziendali.it)
+# Copyright 2024 Simone Rubino - Aion Tech
 
 import base64
 import io
 from datetime import timedelta
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -132,7 +134,7 @@ class WizardGiornaleReportlab(models.TransientModel):
                 am.name AS move_name,
                 aa.code AS account_code,
                 aa.name AS account_name,
-                COALESCE(am.ref, '') AS name,
+                COALESCE(am.ref, '') AS ref,
                 SUM(aml.debit) AS debit,
                 SUM(aml.credit) AS credit
             FROM
@@ -153,7 +155,8 @@ class WizardGiornaleReportlab(models.TransientModel):
             ORDER BY
                 am.date,
                 am.name,
-                aa.code
+                aa.code,
+                am.ref;
         """
         params = {
             "date_from": wizard.date_move_line_from,
@@ -307,11 +310,21 @@ class WizardGiornaleReportlab(models.TransientModel):
                 "",
                 "",
                 Paragraph(_("Initial Balance"), style_name),
-                Paragraph(formatLang(self.env, self.progressive_debit2), style_number),
-                Paragraph(formatLang(self.env, self.progressive_credit), style_number),
+                Paragraph(
+                    escape(formatLang(self.env, self.progressive_debit2)), style_number
+                ),
+                Paragraph(
+                    escape(formatLang(self.env, self.progressive_credit)), style_number
+                ),
             ]
         ]
         return initial_balance_data
+
+    def _compute_aml_grouped_name(self, line):
+        """
+        When the account move lines are grouped, the "Name" column is left empty.
+        This method can be inherited to compute it as desired."""
+        return ""
 
     def get_grupped_final_tables_report_giornale(
         self, list_grupped_line, tables, start_row, width_available
@@ -330,33 +343,42 @@ class WizardGiornaleReportlab(models.TransientModel):
             (self.progressive_debit2, self.progressive_credit),
         ]
         for line in list_grupped_line:
-            start_row += 1
-            row = Paragraph(str(start_row), style_name)
-            date = Paragraph(format_date(self.env, line["date"]), style_name)
-            move = Paragraph(line["move_name"], style_name)
             account_name = (
                 line["account_code"] + " - " + line["account_name"]
                 if line["account_code"]
                 else line["account_name"]
             )
-            # evitiamo che i caratteri < o > vengano interpretato come tag html
-            # dalla libreria reportlab
-            account_name = account_name.replace("<", "&lt;").replace(">", "&gt;")
+            if not account_name:
+                continue
+
+            start_row += 1
+            row = Paragraph(str(start_row), style_name)
+            date = Paragraph(format_date(self.env, line["date"]), style_name)
+            move = Paragraph(line["move_name"], style_name)
             account = Paragraph(account_name, style_name)
-            name = Paragraph(line["name"], style_name)
+            name = Paragraph(self._compute_aml_grouped_name(line), style_name)
+            ref = Paragraph(line["ref"], style_name)
             # dato che nel SQL ho la somma dei crediti e debiti potrei avere
             # che un conto ha sia debito che credito
             lines_data = []
             if line["debit"] > 0:
-                debit = Paragraph(formatLang(self.env, line["debit"]), style_number)
-                credit = Paragraph(formatLang(self.env, 0), style_number)
+                debit = Paragraph(
+                    escape(formatLang(self.env, line["debit"])), style_number
+                )
+                credit = Paragraph(escape(formatLang(self.env, 0)), style_number)
                 list_balance.append((line["debit"], 0))
-                lines_data.append([[row, date, move, account, name, debit, credit]])
+                lines_data.append(
+                    [[row, date, ref, move, account, name, debit, credit]]
+                )
             if line["credit"] > 0:
-                debit = Paragraph(formatLang(self.env, 0), style_number)
-                credit = Paragraph(formatLang(self.env, line["credit"]), style_number)
+                debit = Paragraph(escape(formatLang(self.env, 0)), style_number)
+                credit = Paragraph(
+                    escape(formatLang(self.env, line["credit"])), style_number
+                )
                 list_balance.append((0, line["credit"]))
-                lines_data.append([[row, date, move, account, name, debit, credit]])
+                lines_data.append(
+                    [[row, date, ref, move, account, name, debit, credit]]
+                )
             for line_data in lines_data:
                 if previous_move_name != line["move_name"]:
                     previous_move_name = line["move_name"]
@@ -390,25 +412,24 @@ class WizardGiornaleReportlab(models.TransientModel):
 
         for line in self.env["account.move.line"].browse(move_line_ids):
             start_row += 1
-            row = Paragraph(str(start_row), style_name)
-            date = Paragraph(format_date(self.env, line.date), style_name)
-            ref = Paragraph(str(line.ref or ""), style_name)
+            row = Paragraph(escape(str(start_row)), style_name)
+            date = Paragraph(escape(format_date(self.env, line.date)), style_name)
+            ref = Paragraph(escape(str(line.ref or "")), style_name)
             move_name = line.move_id.name or ""
-            move = Paragraph(move_name, style_name)
+            move = Paragraph(escape(move_name), style_name)
             account_name = self._get_account_name_reportlab(line)
             # evitiamo che i caratteri < o > vengano interpretato come tag html
             # dalla libreria reportlab
-            account_name = account_name.replace("<", "&lt;").replace(">", "&gt;")
-            account = Paragraph(account_name, style_name)
+            account = Paragraph(escape(account_name), style_name)
             if line.account_id.account_type in [
                 "asset_receivable",
                 "liability_payable",
             ]:
-                name = Paragraph(str(line.partner_id.name or ""), style_name)
+                name = Paragraph(escape(str(line.partner_id.name or "")), style_name)
             else:
-                name = Paragraph(str(line.name or ""), style_name)
-            debit = Paragraph(formatLang(self.env, line.debit), style_number)
-            credit = Paragraph(formatLang(self.env, line.credit), style_number)
+                name = Paragraph(escape(str(line.name or "")), style_name)
+            debit = Paragraph(escape(formatLang(self.env, line.debit)), style_number)
+            credit = Paragraph(escape(formatLang(self.env, line.credit)), style_number)
             list_balance.append((line.debit, line.credit))
             line_data = [[row, date, ref, move, account, name, debit, credit]]
             if previous_move_name != move_name:
@@ -437,8 +458,8 @@ class WizardGiornaleReportlab(models.TransientModel):
                 "",
                 "",
                 name,
-                Paragraph(formatLang(self.env, tot_debit), style_number),
-                Paragraph(formatLang(self.env, tot_credit), style_number),
+                Paragraph(escape(formatLang(self.env, tot_debit)), style_number),
+                Paragraph(escape(formatLang(self.env, tot_credit)), style_number),
             ]
         ]
         return balance_data
