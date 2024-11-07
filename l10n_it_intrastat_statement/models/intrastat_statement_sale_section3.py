@@ -23,15 +23,21 @@ class IntrastatStatementSaleSection3(models.Model):
         comodel_name="res.country", string="Payment Country"
     )
 
+    def get_supply_method_key(self):
+        self.ensure_one()
+        return self.supply_method
+
+    def get_payment_method_key(self):
+        self.ensure_one()
+        return self.payment_method
+
     @api.model
     def get_section_number(self):
         return 3
 
     @api.model
     def _prepare_statement_line(self, inv_intra_line, statement_id=None):
-        res = super(IntrastatStatementSaleSection3, self)._prepare_statement_line(
-            inv_intra_line, statement_id
-        )
+        res = super()._prepare_statement_line(inv_intra_line, statement_id)
         res.update(
             {
                 "invoice_number": inv_intra_line.invoice_number,

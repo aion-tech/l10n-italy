@@ -35,15 +35,21 @@ class IntrastatStatementSaleSection4(models.Model):
         help="The Adjustment is intended for cancellation",
     )
 
+    def get_supply_method_key(self):
+        self.ensure_one()
+        return self.supply_method
+
+    def get_payment_method_key(self):
+        self.ensure_one()
+        return self.payment_method
+
     @api.model
     def get_section_number(self):
         return 4
 
     @api.model
     def _prepare_statement_line(self, inv_intra_line, statement_id=None):
-        res = super(IntrastatStatementSaleSection4, self)._prepare_statement_line(
-            inv_intra_line, statement_id
-        )
+        res = super()._prepare_statement_line(inv_intra_line, statement_id)
 
         # Period Ref
         ref_period = statement_id._get_period_ref()
@@ -64,9 +70,7 @@ class IntrastatStatementSaleSection4(models.Model):
         return res
 
     def _export_line_checks(self, section_label, section_number):
-        res = super(IntrastatStatementSaleSection4, self)._export_line_checks(
-            section_label, section_number
-        )
+        res = super()._export_line_checks(section_label, section_number)
         if not self.year_id:
             raise ValidationError(_("Missing reference year on 'Sales - Section 4'"))
         if not self.intrastat_custom_id:
