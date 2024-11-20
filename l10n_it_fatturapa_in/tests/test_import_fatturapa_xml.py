@@ -1070,6 +1070,29 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
         self.assertFalse(attach.xml_supplier_id)
         self.assertTrue(attach.inconsistencies)
 
+    def test_increased_decimal_precision(self):
+        """
+        Increase price decimal precision during import:
+        computation of line's price is more accurate.
+        """
+        res = self.run_wizard(
+            "increased_decimal_precision",
+            "IT01234567890_FPR16.xml",
+            wiz_values={
+                "price_decimal_digits": 3,
+            },
+        )
+        invoice = self.invoice_model.search(res["domain"])
+        invoice_line = invoice.invoice_line_ids
+        self.assertRecordValues(
+            invoice_line,
+            [
+                {
+                    "price_subtotal": 66.79,
+                }
+            ],
+        )
+
 
 class TestFatturaPAEnasarco(FatturapaCommon):
     def setUp(self):
