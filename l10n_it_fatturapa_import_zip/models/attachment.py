@@ -1,4 +1,5 @@
 #  Copyright 2023 Simone Rubino - TAKOBI
+#  Copyright 2024 Simone Rubino - Aion Tech
 #  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import base64
@@ -45,7 +46,11 @@ class FatturaPAAttachmentImportZIP(models.Model):
     _name = "fatturapa.attachment.import.zip"
     _description = "E-bill ZIP import"
     _inherits = {"ir.attachment": "ir_attachment_id"}
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = [
+        "mail.thread",
+        "mail.activity.mixin",
+        "l10n_it_fatturapa.attachment.e_invoice.link",
+    ]
     _order = "id desc"
 
     ir_attachment_id = fields.Many2one(
@@ -147,7 +152,7 @@ class FatturaPAAttachmentImportZIP(models.Model):
                 ),
             )
 
-    def action_import(self):
+    def action_import(self, with_invoice=True):
         self.ensure_one()
         company_partner = self.env.company.partner_id
         with tempfile.TemporaryDirectory() as tmp_dir_path:
@@ -177,16 +182,17 @@ class FatturaPAAttachmentImportZIP(models.Model):
                         attachment = self.env["fatturapa.attachment.out"].create(
                             attach_vals
                         )
-                    wizard = (
-                        self.env["wizard.import.fatturapa"]
-                        .with_context(
-                            active_ids=attachment.ids,
-                            active_model=attachment._name,
+                    if with_invoice:
+                        wizard = (
+                            self.env["wizard.import.fatturapa"]
+                            .with_context(
+                                active_ids=attachment.ids,
+                                active_model=attachment._name,
+                            )
+                            .create({})
                         )
-                        .create({})
-                    )
-                    _logger.info(f"Importing {xml_file}")
-                    wizard.importFatturaPA()
+                        _logger.info(f"Importing {xml_file}")
+                        wizard.importFatturaPA()
                 else:
                     _logger.info(f"Skipping {xml_file}, not an XML/P7M file")
             self.env.company.in_invoice_registration_date = (
@@ -194,6 +200,14 @@ class FatturaPAAttachmentImportZIP(models.Model):
             )
 
         self.state = "done"
+
+    def action_import_with_invoice(self):
+        self.ensure_one()
+        self.action_import(with_invoice=True)
+
+    def action_import_no_invoice(self):
+        self.ensure_one()
+        self.action_import(with_invoice=False)
 
 
 class FatturaPAAttachmentIn(models.Model):
@@ -217,6 +231,6 @@ class FatturaPAAttachmentOut(models.Model):
         ondelete="restrict",
     )
 
-    def get_invoice_obj(self, fatturapa_attachment):
-        xml_string = fatturapa_attachment.get_xml_string()
+    def get_invoice_obj(self):
+        xml_string = self.get_xml_string()
         return efattura.CreateFromDocument(xml_string)
