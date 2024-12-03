@@ -4,6 +4,7 @@
 #  Copyright 2015 Associazione Odoo Italia (<http://www.odoo-italia.org>)
 #  Copyright 2021 Gianmarco Conte - Dinamiche Aziendali Srl (<www.dinamicheaziendali.it>)
 #  Copyright 2024 Simone Rubino - Aion Tech
+#  Copyright 2022 ~ 2023 Simone Rubino - TAKOBI
 #  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 {
@@ -17,6 +18,7 @@
     "depends": [
         "account",
         "account_journal_group_included",
+        "account_lock",
         "account_tax_balance",
         "date_range",
         "l10n_it_account",
