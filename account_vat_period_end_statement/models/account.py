@@ -436,7 +436,7 @@ class AccountVatPeriodEndStatement(models.Model):
 
     def _set_company_lock_date(self):
         self.ensure_one()
-        company = self.company_id or self.env.user.company_id
+        company = self.company_id or self.env.company
         if company.account_vat_period_end_statement_set_lock_date:
             end_date = self._get_end_date()
             if end_date:
