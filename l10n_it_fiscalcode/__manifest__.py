@@ -7,7 +7,7 @@
 
 {
     "name": "ITA - Codice fiscale",
-    "version": "16.0.1.0.1",
+    "version": "16.0.1.1.0",
     "development_status": "Production/Stable",
     "category": "Localization/Italy",
     "author": "Link IT s.r.l., "
@@ -27,6 +27,7 @@
         "view/report_invoice_document.xml",
         "wizard/compute_fc_view.xml",
         "view/company_view.xml",
+        "view/res_config_settings_views.xml",
     ],
     "installable": True,
 }
