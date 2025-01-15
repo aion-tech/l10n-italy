@@ -125,9 +125,9 @@ class AccountPartialReconcile(models.Model):
                     and not self.env.context.get("no_generate_wt_move")
                     and not is_wt_move
                     and (
-                        debit_move_line.account_internal_type
+                        debit_move_line.account_type
                         in ("receivable", "payable")
-                        or credit_move_line.account_internal_type
+                        or credit_move_line.account_type
                         in ("receivable", "payable")
                     )
                 ):
