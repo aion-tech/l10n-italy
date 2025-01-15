@@ -143,6 +143,7 @@ Contributors
 - Lorenzo Battistini <lorenzo.battistini@agilebg.com>
 - Marco Colombo <https://github.com/TheMule71>
 - Alex Comba <alex.comba@agilebg.com>
+-  Simone Rubino <simone.rubino@aion-tech.it>
 
 Maintainers
 -----------
