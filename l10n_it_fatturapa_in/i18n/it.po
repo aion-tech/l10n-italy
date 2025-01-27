@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-09 20:32+0000\n"
-"PO-Revision-Date: 2024-08-31 12:06+0000\n"
+"PO-Revision-Date: 2024-12-15 15:06+0000\n"
 "Last-Translator: mymage <stefano.consolaro@mymage.it>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -152,17 +152,6 @@ msgstr ""
 "Numero fattura {bill_nbr} del {bill_date}.\n"
 "Totale imponibile: {bill_no_tax}\n"
 "Totale imposte: {bill_tax}"
-
-#. module: l10n_it_fatturapa_in
-#. odoo-python
-#: code:addons/l10n_it_fatturapa_in/wizard/wizard_import_fatturapa.py:0
-#, python-format
-msgid ""
-"Bill total %(amount_total)s is different from document total amount "
-"%(document_total_amount)s"
-msgstr ""
-"Il totale fattura %(amount_total)s è diverso dall'importo totale del "
-"documento %(document_total_amount)s"
 
 #. module: l10n_it_fatturapa_in
 #: model_terms:ir.ui.view,arch_db:l10n_it_fatturapa_in.view_fatturapa_in_attachment_form
@@ -428,6 +417,7 @@ msgid "Discount and Supplement Details"
 msgstr "Dettagli sconto e maggiorazione"
 
 #. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__discount_decimal_digits
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_wizard_import_fatturapa__discount_decimal_digits
 msgid "Discounts decimal digits"
 msgstr "Cifre decimali sconti"
@@ -636,7 +626,7 @@ msgstr "Contenuto file (base64)"
 #. module: l10n_it_fatturapa_in
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__raw
 msgid "File Content (raw)"
-msgstr "Contenuto file (grezzo)"
+msgstr "Contenuto file (raw)"
 
 #. module: l10n_it_fatturapa_in
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__file_size
@@ -664,13 +654,6 @@ msgstr "Forza validazione e-fattura"
 #: model_terms:ir.ui.view,arch_db:l10n_it_fatturapa_in.view_invoice_form_fatturapa_in
 msgid "General Data"
 msgstr "Dati generali"
-
-#. module: l10n_it_fatturapa_in
-#. odoo-python
-#: code:addons/l10n_it_fatturapa_in/wizard/wizard_import_fatturapa.py:0
-#, python-format
-msgid "Global bill discount from document general data"
-msgstr "Sconto globale fattura dai dati generali del documento"
 
 #. module: l10n_it_fatturapa_in
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__has_message
@@ -1119,6 +1102,7 @@ msgid "Preview link"
 msgstr "Collegamento di anteprima"
 
 #. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__price_decimal_digits
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_wizard_import_fatturapa__price_decimal_digits
 msgid "Prices decimal digits"
 msgstr "Cifre decimali prezzi"
@@ -1152,6 +1136,7 @@ msgid "Province ( %s ) not present in your system"
 msgstr "Provincia ( %s ) non presente nel sistema"
 
 #. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_fatturapa_attachment_in__quantity_decimal_digits
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_wizard_import_fatturapa__quantity_decimal_digits
 msgid "Quantities decimal digits"
 msgstr "Cifre decimali quantità"
@@ -1528,6 +1513,33 @@ msgid "VAT Rate"
 msgstr "Aliquota IVA"
 
 #. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,help:l10n_it_fatturapa_in.field_fatturapa_attachment_in__discount_decimal_digits
+msgid ""
+"Value used during import of this e-invoice to override \"Discount\" "
+"precision."
+msgstr ""
+"Valore utilizzato durante l'importazione di questa fattura elettronica per "
+"sovrascrivere la precisione \"Sconto\"."
+
+#. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,help:l10n_it_fatturapa_in.field_fatturapa_attachment_in__price_decimal_digits
+msgid ""
+"Value used during import of this e-invoice to override \"Product Price\" "
+"precision."
+msgstr ""
+"Valore utilizzato durante l'importazione di questa fattura elettronica per "
+"sovrascrivere la precisione del \"Prezzo del prodotto\"."
+
+#. module: l10n_it_fatturapa_in
+#: model:ir.model.fields,help:l10n_it_fatturapa_in.field_fatturapa_attachment_in__quantity_decimal_digits
+msgid ""
+"Value used during import of this e-invoice to override \"Product Unit of "
+"Measure\" precision."
+msgstr ""
+"Valore utilizzato durante l'importazione di questa fattura elettronica per "
+"sovrascrivere la precisione \"Unità di misura del prodotto\"."
+
+#. module: l10n_it_fatturapa_in
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_res_company__in_invoice_registration_date
 #: model:ir.model.fields,field_description:l10n_it_fatturapa_in.field_res_config_settings__in_invoice_registration_date
 msgid "Vendor invoice registration default date"
@@ -1648,6 +1660,18 @@ msgstr ""
 #, python-format
 msgid "You can select only one XML file to link."
 msgstr "È possibile selezionare solo un file XML da collegare."
+
+#, python-format
+#~ msgid ""
+#~ "Bill total %(amount_total)s is different from document total amount "
+#~ "%(document_total_amount)s"
+#~ msgstr ""
+#~ "Il totale fattura %(amount_total)s è diverso dall'importo totale del "
+#~ "documento %(document_total_amount)s"
+
+#, python-format
+#~ msgid "Global bill discount from document general data"
+#~ msgstr "Sconto globale fattura dai dati generali del documento"
 
 #~ msgid "Creation"
 #~ msgstr "Creazione"

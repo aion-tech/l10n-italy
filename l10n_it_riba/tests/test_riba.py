@@ -5,6 +5,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 import base64
+import datetime
 import os
 
 from odoo.exceptions import UserError
@@ -764,3 +765,123 @@ class TestInvoiceDueCost(riba_common.TestRibaCommon):
             ),
             err_msg,
         )
+
+    def test_riba_payment_date_multiple_lines(self):
+        """A specific date can be set to pay multiple RiBa lines."""
+        # Arrange
+        company = self.env.company
+        payment_date = datetime.date(2020, month=1, day=1)
+        payment_term = self.payment_term2
+        riba_configuration = self.riba_config_sbf_immediate
+        product = self.product1
+        partner = self.partner
+        company.due_cost_service_id = self.service_due_cost
+
+        invoice_form = Form(
+            self.env["account.move"].with_context(
+                default_move_type="out_invoice",
+                default_name="Test invoice",
+            )
+        )
+        invoice_form.partner_id = partner
+        invoice_form.invoice_payment_term_id = payment_term
+        invoice_form.riba_partner_bank_id = first(partner.bank_ids)
+        with invoice_form.invoice_line_ids.new() as line:
+            line.product_id = product
+        invoice = invoice_form.save()
+        invoice.action_post()
+
+        to_issue_action = self.env.ref("l10n_it_riba.action_riba_to_issue")
+        to_issue_records = self.env[to_issue_action.res_model].search(
+            safe_eval.safe_eval(to_issue_action.domain)
+        )
+        invoice_to_issue_records = to_issue_records & invoice.line_ids
+        self.assertTrue(invoice_to_issue_records)
+
+        issue_wizard_model = self.env["riba.issue"].with_context(
+            active_model=invoice_to_issue_records._name,
+            active_ids=invoice_to_issue_records.ids,
+        )
+        issue_wizard_form = Form(issue_wizard_model)
+        issue_wizard_form.configuration_id = riba_configuration
+        issue_wizard = issue_wizard_form.save()
+        issue_result = issue_wizard.create_list()
+        slip = self.env[issue_result["res_model"]].browse(issue_result["res_id"])
+
+        slip.confirm()
+        self.assertEqual(slip.state, "accepted")
+
+        credit_wizard_action = self.env.ref("l10n_it_riba.riba_credit_action")
+        credit_wizard = (
+            self.env[credit_wizard_action["res_model"]]
+            .with_context(active_id=slip.id)
+            .create(
+                {
+                    "bank_amount": invoice.amount_total,
+                }
+            )
+        )
+        credit_wizard.create_move()
+        self.assertEqual(slip.state, "credited")
+
+        # Act
+        payment_wizard_action = slip.settle_all_line()
+        payment_wizard_form = Form(
+            self.env[payment_wizard_action["res_model"]].with_context(
+                **payment_wizard_action["context"]
+            )
+        )
+        payment_wizard_form.payment_date = payment_date
+        payment_wizard = payment_wizard_form.save()
+        payment_wizard.pay()
+
+        # Assert
+        self.assertEqual(slip.state, "paid")
+        payment_move = slip.payment_ids.move_id
+        self.assertEqual(payment_move.date, payment_date)
+
+    def test_supplier_company_bank_account_domain(self):
+        """The domain for Company Bank Account for Supplier
+        only shows bank accounts of current company."""
+        # Arrange
+        current_company, other_company = self.env.company, self.company2
+        current_bank_account = self.company_bank
+        other_bank_account = self.company2_bank
+        # pre-condition: Bank accounts belong to different companies
+        self.assertNotEqual(current_company, other_company)
+        self.assertEqual(current_bank_account.partner_id, current_company.partner_id)
+        self.assertEqual(other_bank_account.partner_id, other_company.partner_id)
+
+        # Act: Search bank accounts
+        domain = self.env["res.partner"].fields_get(
+            allfields=["property_riba_supplier_company_bank_id"],
+            attributes=["domain"],
+        )["property_riba_supplier_company_bank_id"]["domain"]
+        bank_accounts = self.env["res.partner.bank"].search(domain)
+
+        # Assert: only the bank account of current company is found
+        self.assertIn(current_bank_account, bank_accounts)
+        self.assertNotIn(other_bank_account, bank_accounts)
+
+    def test_supplier_to_bill_company_bank_account(self):
+        """A supplier has a company bank account,
+        it is propagated to its vendor bill."""
+        # Arrange
+        bank_account = self.company_bank
+        payment_term = self.payment_term1
+        supplier = self.partner
+        supplier.property_supplier_payment_term_id = payment_term
+        supplier.property_riba_supplier_company_bank_id = bank_account
+        self.assertTrue(payment_term.riba)
+
+        # Act: Create the vendor bill
+        bill = self.env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": supplier.id,
+                "invoice_payment_term_id": payment_term.id,
+            }
+        )
+
+        # Assert
+        self.assertEqual(bill.riba_supplier_company_bank_id, bank_account)

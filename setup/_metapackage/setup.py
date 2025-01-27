@@ -10,7 +10,9 @@ setuptools.setup(
     install_requires=[
         'odoo-addon-account_vat_period_end_statement>=16.0dev,<16.1dev',
         'odoo-addon-currency_rate_update_boi>=16.0dev,<16.1dev',
+        'odoo-addon-fiscal_epos_print>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_abicab>=16.0dev,<16.1dev',
+        'odoo-addon-l10n_it_accompanying_invoice>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_account>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_account_stamp>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_account_tax_kind>=16.0dev,<16.1dev',
@@ -57,6 +59,7 @@ setuptools.setup(
         'odoo-addon-l10n_it_rea>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_reverse_charge>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_riba>=16.0dev,<16.1dev',
+        'odoo-addon-l10n_it_sct_cbi>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_sdi_channel>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_split_payment>=16.0dev,<16.1dev',
         'odoo-addon-l10n_it_vat_payability>=16.0dev,<16.1dev',
