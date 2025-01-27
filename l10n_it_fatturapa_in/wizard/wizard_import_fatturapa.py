@@ -7,8 +7,6 @@ import re
 import warnings
 from datetime import datetime
 
-import psycopg2
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.fields import first
@@ -1249,7 +1247,15 @@ class WizardImportFatturapa(models.TransientModel):
         # 2.5
         self.set_attachments_data(FatturaBody, invoice)
 
-        if self.e_invoice_detail_level != "1":
+        # Avoid set roundings if import level is not maximum, because adding
+        # roundings generate problems:
+        #  - generate a tax line in account.move.line
+        #    entries with different values for amount_currency and balance
+        #    raising ``check_amount_currency_balance_sign`` constraint in
+        #    account.move
+        #  - If rounding line is the only line the import generate a refund
+        #    instead of an invoice
+        if self.e_invoice_detail_level == "2":
             self.set_roundings(FatturaBody, invoice)
 
         self.set_vendor_bill_data(FatturaBody, invoice)
@@ -1783,7 +1789,7 @@ class WizardImportFatturapa(models.TransientModel):
             raise cv
         invoice_line_ids.append(invoice_line_id)
 
-    def _set_decimal_precision(self, precision_name, field_name):
+    def _set_decimal_precision(self, precision_name, field_name, attachments):
         precision = self.env["decimal.precision"].search(
             [("name", "=", precision_name)], limit=1
         )
@@ -1793,6 +1799,11 @@ class WizardImportFatturapa(models.TransientModel):
             different_precisions = self[field_name] != original_precision
             if different_precisions:
                 precision.sudo().digits = self[field_name]
+                attachments.update(
+                    {
+                        field_name: self[field_name],
+                    }
+                )
         return precision, different_precisions, original_precision
 
     def _restore_original_precision(self, precision, original_precision):
@@ -1805,28 +1816,34 @@ class WizardImportFatturapa(models.TransientModel):
 
     def importFatturaPA(self):
         self.ensure_one()
+        fatturapa_attachments = self._get_selected_records()
 
         (
             price_precision,
             different_price_precisions,
             original_price_precision,
-        ) = self._set_decimal_precision("Product Price", "price_decimal_digits")
+        ) = self._set_decimal_precision(
+            "Product Price", "price_decimal_digits", attachments=fatturapa_attachments
+        )
         (
             qty_precision,
             different_qty_precisions,
             original_qty_precision,
         ) = self._set_decimal_precision(
-            "Product Unit of Measure", "quantity_decimal_digits"
+            "Product Unit of Measure",
+            "quantity_decimal_digits",
+            attachments=fatturapa_attachments,
         )
         (
             discount_precision,
             different_discount_precisions,
             original_discount_precision,
-        ) = self._set_decimal_precision("Discount", "discount_decimal_digits")
+        ) = self._set_decimal_precision(
+            "Discount", "discount_decimal_digits", attachments=fatturapa_attachments
+        )
 
         new_invoices = []
         # convert to dict in order to be able to modify context
-        fatturapa_attachments = self._get_selected_records()
         self.env.context = dict(self.env.context)
         for fatturapa_attachment in fatturapa_attachments:
             self.reset_inconsistencies()
