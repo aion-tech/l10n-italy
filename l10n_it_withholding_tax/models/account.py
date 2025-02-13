@@ -348,6 +348,19 @@ class AccountFiscalPosition(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    def button_draft(self):
+        if self.invoice_payments_widget:
+            invoice_payments_widget = self.invoice_payments_widget.get("content", [])
+            wt_ids = [
+                p["move_id"] for p in invoice_payments_widget if p.get("wt_move_line")
+            ]
+
+            if wt_ids:
+                self.env["account.move"].browse(wt_ids).button_draft()
+                self.env["account.move"].browse(wt_ids).unlink()
+
+        res = super(AccountMove, self).button_draft()
+
     @api.depends(
         "invoice_line_ids.price_subtotal",
         "withholding_tax_line_ids.tax",
