@@ -7,6 +7,8 @@ import re
 import warnings
 from datetime import datetime
 
+import psycopg2
+
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.fields import Command, first
