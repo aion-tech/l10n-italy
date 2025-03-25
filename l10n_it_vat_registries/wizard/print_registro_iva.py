@@ -75,14 +75,16 @@ class WizardRegistroIva(models.TransientModel):
         ]
 
     def _get_move_ids(self, wizard):
-        MAPPING = {
-            "journal_date_name": "journal_id, date, name",
-            "date_name": "date, name",
-        }
-        order = MAPPING[wizard.entry_order]
+        if wizard:
+            warnings.warn(
+                "`wizard` parameter will be removed because is the same as `self`.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         moves = self.env["account.move"].search(
             self._get_move_ids_domain(),
-            order=order,
+            order="date, name",
         )
         return moves.ids
 
