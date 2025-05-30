@@ -82,11 +82,9 @@ class WizardRegistroIva(models.TransientModel):
                 stacklevel=2,
             )
 
-        MAPPING = {
-            "journal_date_name": "journal_id, date, name",
-            "date_name": "date, name",
-        }
-        order = MAPPING[wizard.entry_order]
+        order = "date, name"
+        if wizard.entry_order == 'journal_date_name':
+            order = "journal_id, date, name"
 
         moves = self.env["account.move"].search(
             self._get_move_ids_domain(),
