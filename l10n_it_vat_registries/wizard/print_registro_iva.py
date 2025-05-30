@@ -82,9 +82,13 @@ class WizardRegistroIva(models.TransientModel):
                 stacklevel=2,
             )
 
+        order = "date, name"
+        if wizard.entry_order == 'journal_date_name':
+            order = "journal_id, date, name"
+
         moves = self.env["account.move"].search(
             self._get_move_ids_domain(),
-            order="date, name",
+            order=order,
         )
         return moves.ids
 
@@ -109,6 +113,7 @@ class WizardRegistroIva(models.TransientModel):
             "year_footer": self.year_footer,
             "date_format": lang.date_format,
             "only_totals": self.only_totals,
+            "entry_order": self.entry_order,
         }
         if self.tax_registry_id:
             datas_form["tax_registry_name"] = self.tax_registry_id.name
