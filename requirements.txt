@@ -2,6 +2,7 @@
 asn1crypto
 codicefiscale
 elementpath
+num2words>=0.5.12
 fintech>=7.2.10
 openupgradelib
 unidecode

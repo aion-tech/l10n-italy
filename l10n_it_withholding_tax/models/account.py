@@ -239,7 +239,7 @@ class AccountPartialReconcile(models.Model):
                 line_to_reconcile = line
                 break
         if line_to_reconcile:
-            if lines.move_id.move_type in ["in_refund", "out_invoice"]:
+            if line_to_reconcile.move_id.move_type in ["in_refund", "out_invoice"]:
                 debit_move_id = rec_line_statement.id
                 credit_move_id = line_to_reconcile.id
             else:
@@ -675,7 +675,7 @@ class AccountMoveLine(models.Model):
             # Delete wt move
             for wt_move in wt_mls.mapped("move_id"):
                 wt_move.button_draft()
-                wt_move.unlink()
+                wt_move.with_context(force_delete=True).unlink()
 
         return super(AccountMoveLine, self).remove_move_reconcile()
 
