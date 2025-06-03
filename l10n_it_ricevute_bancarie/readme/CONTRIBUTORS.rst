@@ -9,4 +9,12 @@
 * Sergio Zanchetta <https://github.com/primes2h>
 * Simone Vanin <simone.vanin@agilebg.com>
 * Sergio Corato <https://github.com/sergiocorato>
-* Giovanni Serra <giovanni@gslab.it>
+
+* `Ooops <https://www.ooops404.com>`_:
+  * Giovanni Serra <giovanni@gslab.it>
+  * Eduard Brahas <eduard@ooops404.com>
+
+- `TAKOBI <https://takobi.online>`_:
+  - Simone Rubino <sir@takobi.online>
+
+* Nextev Srl <odoo@nextev.it>

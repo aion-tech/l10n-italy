@@ -4,6 +4,7 @@ import logging
 import os
 from datetime import datetime
 
+import phonenumbers
 from lxml import etree
 from unidecode import unidecode
 
@@ -33,6 +34,15 @@ def format_numbers(number):
     return float_repr(number, max(2, len(cents)))
 
 
+def fpaToEur(amount, invoice, euro, rate=None):
+    currency = invoice.currency_id
+    if currency == euro:
+        return amount
+    elif rate is not None:
+        return amount * (1 / rate)
+    return currency._convert(amount, euro, invoice.company_id, invoice.date, False)
+
+
 class EFatturaOut:
     def get_template_values(self):  # noqa: C901
         """Prepare values and helper functions for the template"""
@@ -56,9 +66,25 @@ class EFatturaOut:
         def format_phone(number):
             if not number:
                 return False
-            number = number.replace(" ", "").replace("/", "").replace(".", "")
-            if len(number) > 4 and len(number) < 13:
-                return number
+            pn = phonenumbers.parse(number, "IT")
+
+            if not phonenumbers.is_valid_number_for_region(pn, "IT"):
+                number = (
+                    "0"
+                    + phonenumbers.format_number(
+                        pn, phonenumbers.PhoneNumberFormat.E164
+                    )[1:]
+                )
+                if len(number) > 4 and len(number) < 13:
+                    return number
+                else:
+                    return False
+
+            str_national_number = phonenumbers.format_number(
+                pn, phonenumbers.PhoneNumberFormat.NATIONAL
+            ).replace(" ", "")
+            if len(str_national_number) > 4 and len(str_national_number) < 13:
+                return str_national_number
             return False
 
         def format_price(line, sign=1, original_currency=False):
@@ -110,7 +136,9 @@ class EFatturaOut:
         def get_id_fiscale_iva(partner, prefer_fiscalcode=False):
             id_paese = partner.country_id.code
             if partner.vat:
-                if id_paese == "IT" and partner.vat.startswith("IT"):
+                if (id_paese == "IT" and partner.vat.startswith("IT")) or (
+                    id_paese == "SM" and partner.vat.startswith("SM")
+                ):
                     id_codice = partner.vat[2:]
                 else:
                     id_codice = partner.vat
@@ -191,14 +219,9 @@ class EFatturaOut:
             wiz = self.env["wizard.export.fatturapa"]
             return wiz.getPayments(invoice)
 
-        def fpa_to_eur(amount, invoice):
-            currency = invoice.currency_id
+        def fpa_to_eur(amount, invoice, rate=None):
             euro = self.env.ref("base.EUR")
-            if currency == euro:
-                return amount
-            return currency._convert(
-                amount, euro, invoice.company_id, invoice.date, False
-            )
+            return fpaToEur(amount, invoice, euro, rate)
 
         if self.partner_id.commercial_partner_id.is_pa:
             # check value code
@@ -261,7 +284,26 @@ class EFatturaOut:
             # i controlli precedenti dovrebbero escludere errori di sintassi XML
             # with open("/tmp/fatturaout.xml", "wb") as o:
             #    o.write(etree.tostring(root, xml_declaration=True, encoding="utf-8"))
-            raise UserError("\n".join(str(e) for e in errors))
+            # Print error paths, as they can be helpful even for non-technical people
+            error_path_string = "\n- ".join(
+                err.path[err.path.index(":") + 1 :] for err in errors
+            )
+            error_msg = _(
+                "Error processing invoice(s) %(invoices)s.\n\n"
+                "Errors in the following fields:\n- %(error_path_string)s\n\n",
+                invoices=", ".join(
+                    inv.display_name for inv in template_values["invoices"]
+                ),
+                error_path_string=error_path_string,
+            )
+            # add details in debug mode
+            if env.user.user_has_groups("base.group_no_one"):
+                error_msg += _("Full error follows:\n\n") + "\n".join(
+                    str(e) for e in errors
+                )
+            else:
+                error_msg += _("Activate debug mode to see the full error.")
+            raise UserError(error_msg)
         content = etree.tostring(root, xml_declaration=True, encoding="utf-8")
         return content
 

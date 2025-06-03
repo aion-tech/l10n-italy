@@ -36,6 +36,8 @@ class ReportRegistroIva(models.AbstractModel):
             "compute_totals_tax": self._compute_totals_tax,
             "l10n_it_count_fiscal_page_base": data["form"]["fiscal_page_base"],
             "only_totals": data["form"]["only_totals"],
+            "entry_order": data["form"].get("entry_order"),
+            "show_full_contact_addess": data["form"]["show_full_contact_addess"],
             "date_format": date_format,
             "year_footer": data["form"]["year_footer"],
         }
@@ -62,7 +64,6 @@ class ReportRegistroIva(models.AbstractModel):
         res = {}
 
         for move_line in move_lines:
-            set_cee_absolute_value = False
             if not (move_line.tax_line_id or move_line.tax_ids):
                 continue
 
@@ -77,14 +78,6 @@ class ReportRegistroIva(models.AbstractModel):
             else:
                 tax = move_line.tax_line_id
                 is_base = False
-
-            if (registry_type == "customer" and tax.cee_type == "sale") or (
-                registry_type == "supplier" and tax.cee_type == "purchase"
-            ):
-                set_cee_absolute_value = True
-
-            elif tax.cee_type:
-                continue
 
             if tax.parent_tax_ids and len(tax.parent_tax_ids) == 1:
                 # we group by main tax
@@ -101,8 +94,6 @@ class ReportRegistroIva(models.AbstractModel):
                 }
             tax_amount = move_line.debit - move_line.credit
 
-            if set_cee_absolute_value:
-                tax_amount = abs(tax_amount)
             if (
                 "receivable" in move.financial_type
                 or "payable_refund" == move.financial_type

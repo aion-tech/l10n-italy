@@ -99,6 +99,8 @@ class StockPicking(models.Model):
     delivery_note_readonly = fields.Boolean(compute="_compute_boolean_flags")
     delivery_note_visible = fields.Boolean(compute="_compute_boolean_flags")
     can_be_invoiced = fields.Boolean(compute="_compute_boolean_flags")
+    dn_supplier_number = fields.Char(string="Supplier DN Number", copy=False)
+    dn_supplier_date = fields.Date(string="Supplier DN Date", copy=False)
 
     @property
     def _delivery_note_fields(self):
@@ -124,7 +126,9 @@ class StockPicking(models.Model):
 
         for picking in self:
             picking.use_delivery_note = (
-                not from_delivery_note and picking.state == DONE_PICKING_STATE
+                not picking.picking_type_id.prevent_dn_create
+                and not from_delivery_note
+                and picking.state == DONE_PICKING_STATE
             )
 
             picking.delivery_note_visible = use_advanced_behaviour
@@ -304,6 +308,9 @@ class StockPicking(models.Model):
             )
 
     def _must_create_delivery_note(self):
+        if self.picking_type_id.prevent_dn_create:
+            return False
+
         use_advanced_behaviour = self.user_has_groups(
             "l10n_it_delivery_note.use_advanced_delivery_notes"
         )
@@ -328,14 +335,34 @@ class StockPicking(models.Model):
         if not self.delivery_note_id and delivery_note_to_create:
             self._check_delivery_note_consistency()
         res = super().button_validate()
-        if delivery_note_to_create and not self.delivery_note_id:
+        # Since this method can be called multiple times after the
+        # user clicks on the Validate button we must be sure to create
+        # the delivery note only after the stock_picking data is updated.
+        if (
+            delivery_note_to_create
+            and not self.delivery_note_id
+            and (
+                isinstance(res, bool)
+                or (
+                    isinstance(res, dict)
+                    and res["res_model"] == "stock.backorder.confirmation"
+                )
+            )
+        ):
             delivery_note = self._create_delivery_note()
             self.write({"delivery_note_id": delivery_note.id})
             if self.sale_id:
-                self.sale_id._assign_delivery_notes_invoices(self.sale_id.invoice_ids)
+                self.sale_id._assign_delivery_notes_invoices(
+                    self.sale_id.invoice_ids.ids
+                )
         return res
 
     def _create_delivery_note(self):
+        return self.env["stock.delivery.note"].create(
+            self._prepare_delivery_note_values()
+        )
+
+    def _prepare_delivery_note_values(self):
         partners = self._get_partners()
         type_id = self.env["stock.delivery.note.type"].search(
             [
@@ -345,40 +372,36 @@ class StockPicking(models.Model):
             limit=1,
         )
         delivery_method_id = self.mapped("carrier_id")[:1]
-        return self.env["stock.delivery.note"].create(
-            {
-                "company_id": self.company_id.id,
-                "partner_sender_id": partners[0].id,
-                "partner_id": self.sale_id.partner_id.id
-                if self.sale_id
-                else partners[0].id,
-                "partner_shipping_id": partners[1].id,
-                "type_id": type_id.id,
-                "date": self.date_done,
-                "carrier_id": delivery_method_id.partner_id.id,
-                "delivery_method_id": delivery_method_id.id,
-                "transport_condition_id": (
-                    self.sale_id.default_transport_condition_id.id
-                    or partners[1].default_transport_condition_id.id
-                    or type_id.default_transport_condition_id.id
-                ),
-                "goods_appearance_id": (
-                    self.sale_id.default_goods_appearance_id.id
-                    or partners[1].default_goods_appearance_id.id
-                    or type_id.default_goods_appearance_id.id
-                ),
-                "transport_reason_id": (
-                    self.sale_id.default_transport_reason_id.id
-                    or partners[1].default_transport_reason_id.id
-                    or type_id.default_transport_reason_id.id
-                ),
-                "transport_method_id": (
-                    self.sale_id.default_transport_method_id.id
-                    or partners[1].default_transport_method_id.id
-                    or type_id.default_transport_method_id.id
-                ),
-            }
-        )
+        return {
+            "company_id": self.company_id.id,
+            "partner_sender_id": partners[0].id,
+            "partner_id": partners[2].id if self.sale_id else partners[0].id,
+            "partner_shipping_id": partners[1].id,
+            "type_id": type_id.id,
+            "date": self.date_done,
+            "carrier_id": delivery_method_id.partner_id.id,
+            "delivery_method_id": delivery_method_id.id,
+            "transport_condition_id": (
+                self.sale_id.default_transport_condition_id.id
+                or partners[1].default_transport_condition_id.id
+                or type_id.default_transport_condition_id.id
+            ),
+            "goods_appearance_id": (
+                self.sale_id.default_goods_appearance_id.id
+                or partners[1].default_goods_appearance_id.id
+                or type_id.default_goods_appearance_id.id
+            ),
+            "transport_reason_id": (
+                self.sale_id.default_transport_reason_id.id
+                or partners[1].default_transport_reason_id.id
+                or type_id.default_transport_reason_id.id
+            ),
+            "transport_method_id": (
+                self.sale_id.default_transport_method_id.id
+                or partners[1].default_transport_method_id.id
+                or type_id.default_transport_method_id.id
+            ),
+        }
 
     def delivery_note_update_transport_datetime(self):
         self.delivery_note_id.update_transport_datetime()
@@ -387,6 +410,7 @@ class StockPicking(models.Model):
         partner_id = self.mapped("partner_id")
         src_location_id = self.mapped("location_id")
         dest_location_id = self.mapped("location_dest_id")
+        picking_type_code = self.mapped("picking_type_code")
 
         src_warehouse_id = src_location_id.get_warehouse()
         dest_warehouse_id = dest_location_id.get_warehouse()
@@ -395,18 +419,30 @@ class StockPicking(models.Model):
         dest_partner_id = dest_warehouse_id.partner_id
 
         if not src_partner_id:
-            src_partner_id = partner_id
+            src_partner_id = (
+                self.company_id.partner_id
+                if picking_type_code == ["outgoing"]
+                else partner_id
+            )
 
-            if not dest_partner_id:
+        if not dest_partner_id:
+            dest_partner_id = (
+                self.company_id.partner_id
+                if picking_type_code == ["incoming"]
+                else partner_id
+            )
+
+        if self.mapped("sale_id"):
+            partner_ids = self.mapped("sale_id.partner_invoice_id")
+            if len(partner_ids) > 1:
                 raise ValueError(
-                    "Fields 'src_partner_id' and 'dest_partner_id' "
-                    "cannot be both unset."
+                    "Multiple partner found for sale order linked to pickings!"
                 )
+            partner_id = partner_ids[0]
+        else:
+            partner_id = dest_partner_id.commercial_partner_id
 
-        elif not dest_partner_id:
-            dest_partner_id = partner_id
-
-        return (src_partner_id, dest_partner_id)
+        return (src_partner_id, dest_partner_id, partner_id)
 
     def get_partners(self):
         self._check_delivery_note_consistency()

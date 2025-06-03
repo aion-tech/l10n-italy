@@ -3,6 +3,7 @@
 import base64
 import io
 from datetime import timedelta
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -113,15 +114,15 @@ class WizardGiornaleReportlab(models.TransientModel):
             self.date_move_line_from = date_start
             self.date_move_line_from_view = date_start
             self.date_move_line_to = date_end
-            if self.daterange_id.progressive_line_number != 0:
-                self.start_row = self.daterange_id.progressive_line_number + 1
-            else:
+            if self.daterange_id.progressive_line_number:
                 self.start_row = self.daterange_id.progressive_line_number
             self.progressive_debit2 = self.daterange_id.progressive_debit
             self.progressive_credit = self.daterange_id.progressive_credit
 
             if self.last_def_date_print == self.daterange_id.date_end:
                 self.date_move_line_from_view = self.last_def_date_print
+            if self.daterange_id.progressive_page_number:
+                self.fiscal_page_base = self.daterange_id.progressive_page_number
 
     def get_grupped_line_reportlab_ids(self):
         wizard = self
@@ -203,7 +204,11 @@ class WizardGiornaleReportlab(models.TransientModel):
     def get_template_header_report_giornale(self, report, height_available):
         report.setFont("Helvetica-Bold", 12)
         height_available -= gap
-        report.drawString(margin_left, height_available, self.company_id.name)
+        report.drawString(
+            margin_left,
+            height_available,
+            self.company_id.name + _(" - Account Central Journal"),
+        )
         report.setFont("Helvetica", 10)
         text = ""
         if self.company_id.street:
@@ -224,6 +229,7 @@ class WizardGiornaleReportlab(models.TransientModel):
         page_num = report.getPageNumber() + self.fiscal_page_base
         page_text = _("Page: %s / %s" % (self.year_footer, page_num))
         report.drawString(margin_left, margin_bottom + 12, page_text)
+        return page_num
 
     def get_styles_report_giornale_line(self):
         style_header = ParagraphStyle("style_header")
@@ -305,8 +311,12 @@ class WizardGiornaleReportlab(models.TransientModel):
                 "",
                 "",
                 Paragraph(_("Initial Balance"), style_name),
-                Paragraph(formatLang(self.env, self.progressive_debit2), style_number),
-                Paragraph(formatLang(self.env, self.progressive_credit), style_number),
+                Paragraph(
+                    escape(formatLang(self.env, self.progressive_debit2)), style_number
+                ),
+                Paragraph(
+                    escape(formatLang(self.env, self.progressive_credit)), style_number
+                ),
             ]
         ]
         return initial_balance_data
@@ -329,27 +339,31 @@ class WizardGiornaleReportlab(models.TransientModel):
         ]
         for line in list_grupped_line:
             start_row += 1
-            row = Paragraph(str(start_row), style_name)
-            date = Paragraph(format_date(self.env, line["date"]), style_name)
-            move = Paragraph(line["move_name"], style_name)
+            row = Paragraph(escape(str(start_row)), style_name)
+            date = Paragraph(escape(format_date(self.env, line["date"])), style_name)
+            move = Paragraph(escape(line["move_name"]), style_name)
             account_name = (
                 line["account_code"] + " - " + line["account_name"]
                 if line["account_code"]
                 else line["account_name"]
             )
-            account = Paragraph(account_name, style_name)
-            name = Paragraph(line["name"], style_name)
+            account = Paragraph(escape(account_name), style_name)
+            name = Paragraph(escape(line["name"]), style_name)
             # dato che nel SQL ho la somma dei crediti e debiti potrei avere
             # che un conto ha sia debito che credito
             lines_data = []
             if line["debit"] > 0:
-                debit = Paragraph(formatLang(self.env, line["debit"]), style_number)
-                credit = Paragraph(formatLang(self.env, 0), style_number)
+                debit = Paragraph(
+                    escape(formatLang(self.env, line["debit"])), style_number
+                )
+                credit = Paragraph(escape(formatLang(self.env, 0)), style_number)
                 list_balance.append((line["debit"], 0))
                 lines_data.append([[row, date, move, account, name, debit, credit]])
             if line["credit"] > 0:
-                debit = Paragraph(formatLang(self.env, 0), style_number)
-                credit = Paragraph(formatLang(self.env, line["credit"]), style_number)
+                debit = Paragraph(escape(formatLang(self.env, 0)), style_number)
+                credit = Paragraph(
+                    escape(formatLang(self.env, line["credit"])), style_number
+                )
                 list_balance.append((0, line["credit"]))
                 lines_data.append([[row, date, move, account, name, debit, credit]])
             for line_data in lines_data:
@@ -364,7 +378,7 @@ class WizardGiornaleReportlab(models.TransientModel):
                     tables.append(
                         Table(line_data, colWidths=colwidths, style=style_table)
                     )
-        return tables, list_balance
+        return tables, list_balance, start_row
 
     def get_final_tables_report_giornale(
         self, move_line_ids, tables, start_row, width_available
@@ -385,19 +399,19 @@ class WizardGiornaleReportlab(models.TransientModel):
 
         for line in self.env["account.move.line"].browse(move_line_ids):
             start_row += 1
-            row = Paragraph(str(start_row), style_name)
-            date = Paragraph(format_date(self.env, line.date), style_name)
-            ref = Paragraph(str(line.ref or ""), style_name)
+            row = Paragraph(escape(str(start_row)), style_name)
+            date = Paragraph(escape(format_date(self.env, line.date)), style_name)
+            ref = Paragraph(escape(str(line.ref or "")), style_name)
             move_name = line.move_id.name or ""
-            move = Paragraph(move_name, style_name)
+            move = Paragraph(escape(move_name), style_name)
             account_name = self._get_account_name_reportlab(line)
-            account = Paragraph(account_name, style_name)
+            account = Paragraph(escape(account_name), style_name)
             if line.account_id.user_type_id.type in ["receivable", "payable"]:
-                name = Paragraph(str(line.partner_id.name or ""), style_name)
+                name = Paragraph(escape(str(line.partner_id.name or "")), style_name)
             else:
-                name = Paragraph(str(line.name or ""), style_name)
-            debit = Paragraph(formatLang(self.env, line.debit), style_number)
-            credit = Paragraph(formatLang(self.env, line.credit), style_number)
+                name = Paragraph(escape(str(line.name or "")), style_name)
+            debit = Paragraph(escape(formatLang(self.env, line.debit)), style_number)
+            credit = Paragraph(escape(formatLang(self.env, line.credit)), style_number)
             list_balance.append((line.debit, line.credit))
             line_data = [[row, date, ref, move, account, name, debit, credit]]
             if previous_move_name != move_name:
@@ -407,7 +421,7 @@ class WizardGiornaleReportlab(models.TransientModel):
                 )
             else:
                 tables.append(Table(line_data, colWidths=colwidths, style=style_table))
-        return tables, list_balance
+        return tables, list_balance, start_row
 
     def get_balance_data_report_giornale(self, tot_debit, tot_credit, final=False):
         style_name = self.get_styles_report_giornale_line()["style_name"]
@@ -426,8 +440,8 @@ class WizardGiornaleReportlab(models.TransientModel):
                 "",
                 "",
                 name,
-                Paragraph(formatLang(self.env, tot_debit), style_number),
-                Paragraph(formatLang(self.env, tot_credit), style_number),
+                Paragraph(escape(formatLang(self.env, tot_debit)), style_number),
+                Paragraph(escape(formatLang(self.env, tot_credit)), style_number),
             ]
         ]
         return balance_data
@@ -460,14 +474,18 @@ class WizardGiornaleReportlab(models.TransientModel):
             list_grupped_line = self.get_grupped_line_reportlab_ids()
             if not list_grupped_line:
                 raise UserError(_("No documents found in the current selection"))
-            final_tables, list_balance = self.get_grupped_final_tables_report_giornale(
+            (
+                final_tables,
+                list_balance,
+                end_row,
+            ) = self.get_grupped_final_tables_report_giornale(
                 list_grupped_line, tables, start_row, width_available
             )
         else:
             move_line_ids = self.get_line_reportlab_ids()
             if not move_line_ids:
                 raise UserError(_("No documents found in the current selection"))
-            final_tables, list_balance = self.get_final_tables_report_giornale(
+            final_tables, list_balance, end_row = self.get_final_tables_report_giornale(
                 move_line_ids, tables, start_row, width_available
             )
 
@@ -544,14 +562,14 @@ class WizardGiornaleReportlab(models.TransientModel):
             header_table.drawOn(report, margin_left, height_available)
             height_available -= header_table_height + final_balance_table_height
             final_balance_table.drawOn(report, margin_left, height_available)
-        self.get_template_footer_report_giornale(report)
+        page_num = self.get_template_footer_report_giornale(report)
         report.showPage()
         report.save()
 
         file_base64 = base64.b64encode(pdf_bytes.getvalue())
         self.write({"report_giornale": file_base64})
 
-        return start_row, tot_debit, tot_credit
+        return end_row, tot_debit, tot_credit, page_num
 
     def print_giornale_reportlab(self):
         self.create_report_giornale_reportlab()
@@ -572,7 +590,12 @@ class WizardGiornaleReportlab(models.TransientModel):
         }
 
     def print_giornale_reportlab_final(self):
-        end_row, end_debit, end_credit = self.create_report_giornale_reportlab()
+        (
+            end_row,
+            end_debit,
+            end_credit,
+            end_page,
+        ) = self.create_report_giornale_reportlab()
 
         if (
             not self.company_id.period_lock_date
@@ -582,11 +605,13 @@ class WizardGiornaleReportlab(models.TransientModel):
 
         daterange_vals = {
             "date_last_print": self.date_move_line_to,
+            "progressive_page_number": end_page,
             "progressive_line_number": end_row,
             "progressive_debit": end_debit,
             "progressive_credit": end_credit,
         }
         self.daterange_id.write(daterange_vals)
+        self.on_change_daterange_reportlab()
 
         model_data_obj = self.env["ir.model.data"]
         view_rec = model_data_obj.get_object_reference(

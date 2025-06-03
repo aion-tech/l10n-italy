@@ -8,7 +8,6 @@ from odoo.exceptions import UserError, ValidationError
 
 
 class DeclarationOfIntentYearlyLimit(models.Model):
-
     _name = "l10n_it_declaration_of_intent.yearly_limit"
     _description = "Yearly limit for declarations"
     _order = "company_id, year desc"
@@ -16,8 +15,14 @@ class DeclarationOfIntentYearlyLimit(models.Model):
 
     company_id = fields.Many2one("res.company", string="Company")
     year = fields.Char(required=True)
-    limit_amount = fields.Float()
-    used_amount = fields.Float(compute="_compute_used_amount")
+    limit_amount = fields.Float(string="Plafond")
+    # TODO align terms: used_amount > issued_declarations
+    used_amount = fields.Float(
+        string="Issued Declarations", compute="_compute_used_amount"
+    )
+    actual_used_amount = fields.Float(
+        string="Actual Used Amount", compute="_compute_used_amount"
+    )
 
     def _compute_used_amount(self):
         for record in self:
@@ -31,10 +36,10 @@ class DeclarationOfIntentYearlyLimit(models.Model):
                 ]
             )
             record.used_amount = sum([d.limit_amount for d in declarations])
+            record.actual_used_amount = sum([d.used_amount for d in declarations])
 
 
 class DeclarationOfIntent(models.Model):
-
     _name = "l10n_it_declaration_of_intent.declaration"
     _description = "Declaration of intent"
     _order = "date_start desc,date_end desc"
@@ -44,7 +49,7 @@ class DeclarationOfIntent(models.Model):
         return self.env.company.currency_id
 
     number = fields.Char(copy=False)
-    date = fields.Date(required=True)
+    date = fields.Date(required=True, string="Telematic Protocol Date")
     date_start = fields.Date(required=True)
     date_end = fields.Date(required=True)
     type = fields.Selection(
@@ -55,10 +60,10 @@ class DeclarationOfIntent(models.Model):
     partner_id = fields.Many2one("res.partner", string="Partner", required=True)
     telematic_protocol = fields.Char(required=True)
     partner_document_number = fields.Char(
-        required=True, string="Document Number", help="Number of partner's document"
+        string="Document Number", help="Number of partner's document"
     )
     partner_document_date = fields.Date(
-        required=True, string="Document Date", help="Date of partner's document"
+        string="Document Date", help="Date of partner's document"
     )
     taxes_ids = fields.Many2many("account.tax", string="Taxes", required=True)
     used_amount = fields.Monetary(compute="_compute_amounts", store=True)
@@ -120,7 +125,8 @@ class DeclarationOfIntent(models.Model):
                 sum([d.limit_amount for d in declarations]) + values["limit_amount"]
             )
             if actual_limit_total > plafond.limit_amount:
-                raise UserError(_("Total of documents exceed yearly limit"))
+                if plafond.limit_amount < plafond.actual_used_amount:
+                    raise UserError(_("Total of documents exceed yearly limit"))
         # ----- Assign a number to declaration
         if values and not values.get("number", ""):
             values["number"] = self.env["ir.sequence"].next_by_code(
@@ -186,10 +192,21 @@ class DeclarationOfIntent(models.Model):
             )
         return res
 
-    @api.depends("line_ids", "line_ids.amount", "limit_amount")
+    @api.depends(
+        "line_ids",
+        "line_ids.amount",
+        "limit_amount",
+        "line_ids.invoice_id",
+        "line_ids.invoice_id.state",
+    )
     def _compute_amounts(self):
         for record in self:
-            amount = sum(line.amount for line in record.line_ids)
+            amount = sum(
+                line.amount
+                for line in record.line_ids.filtered(
+                    lambda li: li.invoice_id and li.invoice_id.state == "posted"
+                )
+            )
             # ----- Force value to 0
             if amount < 0.0:
                 amount = 0.0
@@ -255,7 +272,6 @@ class DeclarationOfIntent(models.Model):
 
 
 class DeclarationOfIntentLine(models.Model):
-
     _name = "l10n_it_declaration_of_intent.declaration_line"
     _description = "Details of declaration of intent"
 
@@ -272,7 +288,7 @@ class DeclarationOfIntentLine(models.Model):
     )
     amount = fields.Monetary()
     base_amount = fields.Monetary(string="Base Amount")
-    invoice_id = fields.Many2one("account.move", string="Invoice")
+    invoice_id = fields.Many2one("account.move", string="Invoice", ondelete="cascade")
     date_invoice = fields.Date(related="invoice_id.invoice_date", string="Date Invoice")
     company_id = fields.Many2one(
         "res.company", string="Company", related="declaration_id.company_id"

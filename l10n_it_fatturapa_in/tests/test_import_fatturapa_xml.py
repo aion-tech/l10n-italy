@@ -1,3 +1,6 @@
+#  Copyright 2024 Simone Rubino - Aion Tech
+#  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
 from datetime import date
 
 from psycopg2 import IntegrityError
@@ -445,6 +448,7 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
         self.assertTrue(len(invoices) == 2)
         for invoice in invoices:
             self.assertTrue(len(invoice.invoice_line_ids) == 0)
+            self.assertTrue(invoice.move_type == "in_invoice")
         # allow following tests to reuse the same XML file
         invoices[0].ref = invoices[0].payment_reference = "14165"
         invoices[1].ref = invoices[1].payment_reference = "14166"
@@ -835,13 +839,27 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
         # IT01234567890_FPR14.xml should be tested manually
 
     def test_48_xml_import(self):
-        # my company bank account is the same as the one in XML:
+        # bank account already exists for another partner
         # invoice creation must not be blocked
+        to_unlink = []
+        bank = self.env["res.bank"].create(
+            {
+                "bic": "BCITITMM",
+                "name": "Other Bank",
+            }
+        )
+        to_unlink.append(bank)
+        partner = self.env["res.partner"].create(
+            {
+                "name": "Some Other Company",
+            }
+        )
+        to_unlink.append(partner)
         self.env["res.partner.bank"].create(
             {
                 "acc_number": "IT59R0100003228000000000622",
-                "company_id": self.env.company.id,
-                "partner_id": self.env.company.partner_id.id,
+                "company_id": self.env.user.company_id.id,
+                "partner_id": partner.id,
             }
         )
         res = self.run_wizard("test48", "IT01234567890_FPR15.xml")
@@ -851,6 +869,8 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
             "Bank account IT59R0100003228000000000622 already exists"
             in invoice.inconsistencies
         )
+        for model in to_unlink:
+            model.unlink()
 
     def test_49_xml_import(self):
         # this method name is used in 12.0
@@ -984,6 +1004,53 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
             ),
         )
 
+    def test_54_xml_import(self):
+        """
+        Test: Negative invoice (TD01) is correctly imported,
+        converted all values to positive and set move_type to in_refund
+        """
+        res = self.run_wizard("test54", "IT02098391200_FPR16.xml")
+        invoice_id = res.get("domain")[0][2][0]
+        invoice = self.invoice_model.browse(invoice_id)
+        self.assertEqual(invoice.amount_untaxed, 1.5)
+        self.assertEqual(invoice.amount_total, 1.83)
+        self.assertEqual(invoice.invoice_line_ids[0].price_unit, 0.15)
+        self.assertEqual(invoice.invoice_line_ids[0].quantity, 10.0)
+        self.assertEqual(invoice.invoice_line_ids[0].price_subtotal, 1.5)
+        self.assertEqual(invoice.move_type, "in_refund")
+
+    def test_55_xml_import(self):
+        # Payments may refer to our own bank account (SEPA)
+        to_unlink = []
+        bank = self.env["res.bank"].create(
+            {
+                "bic": "BCITITMM",
+                "name": "Other Bank",
+            }
+        )
+        to_unlink.append(bank)
+        bank_account = self.env["res.partner.bank"].create(
+            {
+                "acc_number": "IT59R0100003228000000000622",
+                "company_id": self.env.user.company_id.id,
+                "partner_id": self.env.user.company_id.partner_id.id,
+            }
+        )
+        to_unlink.append(bank_account)
+        res = self.run_wizard("test55", "IT01234567890_FPR15.xml")
+        invoice_id = res.get("domain")[0][2][0]
+        invoice = self.invoice_model.browse(invoice_id)
+        self.assertIn(
+            invoice.fatturapa_payments[0].payment_methods[0].payment_bank_iban,
+            invoice.company_id.partner_id.bank_ids.mapped("acc_number"),
+        )
+        self.assertFalse(
+            "Bank account IT59R0100003228000000000622 already exists"
+            in invoice.inconsistencies
+        )
+        for model in to_unlink:
+            model.unlink()
+
     def test_01_xml_link(self):
         """
         E-invoice lines are created.
@@ -1054,6 +1121,15 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
         # allow following tests to reuse the same XML file
         orig_invoice.ref = orig_invoice.payment_reference = "14021"
 
+    def test_01_xml_preview(self):
+        res = self.run_wizard("test_preview", "IT05979361218_001.xml")
+        invoice_id = res.get("domain")[0][2][0]
+        invoice = self.invoice_model.browse(invoice_id)
+        preview_action = invoice.fatturapa_attachment_in_id.ftpa_preview()
+        self.assertEqual(
+            preview_action["url"], invoice.fatturapa_attachment_in_id.ftpa_preview_link
+        )
+
     def test_01_xml_zero_quantity_line(self):
         res = self.run_wizard("test_zeroq_01", "IT05979361218_q0.xml")
         invoice_id = res.get("domain")[0][2][0]
@@ -1093,6 +1169,63 @@ class TestFatturaPAXMLValidation(FatturapaCommon):
         attach = self.run_wizard("duplicated_vat", "IT05979361218_012.xml", mode=False)
         self.assertFalse(attach.xml_supplier_id)
         self.assertTrue(attach.inconsistencies)
+
+    def test_access_other_user_e_invoice(self):
+        """A user can see the e-invoice files created by other users."""
+        # Arrange
+        access_right_group_xmlid = "base.group_erp_manager"
+        user = self.env.user
+        user.groups_id -= self.env.ref("base.group_system")
+        user.groups_id -= self.env.ref(access_right_group_xmlid)
+        other_user = self.env["res.users"].create(
+            {
+                "name": "Other User",
+                "login": "other.user@example.org",
+                "groups_id": [(6, 0, user.groups_id.ids)],
+            }
+        )
+        # pre-condition
+        self.assertFalse(user.has_group(access_right_group_xmlid))
+        self.assertNotEqual(user, other_user)
+
+        # Act
+        with self.with_user(other_user.login):
+            import_action = self.run_wizard(
+                "access_other_user_e_invoice", "IT01234567890_FPR03.xml"
+            )
+
+        # Assert
+        invoices = self.env[import_action["res_model"]].search(import_action["domain"])
+        e_invoice = invoices.fatturapa_attachment_in_id
+        self.assertTrue(e_invoice.ir_attachment_id.read())
+
+    def test_access_other_user_e_invoice_attachments(self):
+        """A user can see the e-invoice attachments created by other users."""
+        # Arrange
+        access_right_group_xmlid = "base.group_erp_manager"
+        user = self.env.user
+        user.groups_id -= self.env.ref("base.group_system")
+        user.groups_id -= self.env.ref(access_right_group_xmlid)
+        other_user = self.env["res.users"].create(
+            {
+                "name": "Attachment User",
+                "login": "attachment_user",
+                "groups_id": [(6, 0, user.groups_id.ids)],
+            }
+        )
+        # pre-condition
+        self.assertFalse(user.has_group(access_right_group_xmlid))
+        self.assertNotEqual(user, other_user)
+        import_action = self.run_wizard(
+            "access_other_user_e_invoice_attachments", "IT02780790107_11004.xml"
+        )
+        # Assert
+        with self.with_user(other_user.login):
+            invoices = self.env[import_action["res_model"]].search(
+                import_action["domain"]
+            )
+            e_invoice = invoices.fatturapa_doc_attachments
+            self.assertTrue(e_invoice.ir_attachment_id.read())
 
 
 class TestFatturaPAEnasarco(FatturapaCommon):

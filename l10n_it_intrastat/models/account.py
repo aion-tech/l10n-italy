@@ -9,7 +9,8 @@ from odoo.tools import float_is_zero
 class AccountFiscalPosition(models.Model):
     _inherit = "account.fiscal.position"
 
-    intrastat = fields.Boolean(string="Subject to Intrastat")
+    intrastat_purchase = fields.Boolean(string="Subject to Intrastat (purchases)")
+    intrastat_sale = fields.Boolean(string="Subject to Intrastat (sales)")
 
 
 class AccountMoveLine(models.Model):
@@ -33,7 +34,7 @@ class AccountMoveLine(models.Model):
         self._prepare_intrastat_line_amount(res)
 
         # Weight
-        weight_kg = self._prepare_intrastat_line_weight(product_template, res)
+        weight_kg = self._prepare_intrastat_line_weight(self.product_id, res)
 
         # Additional Units
         self._prepare_intrastat_line_additional_units(
@@ -217,16 +218,16 @@ class AccountMoveLine(models.Model):
                 additional_units = self.quantity
         res.update({"additional_units": additional_units})
 
-    def _prepare_intrastat_line_weight(self, product_template, res):
+    def _prepare_intrastat_line_weight(self, product, res):
         self.ensure_one()
         intrastat_uom_kg = self.move_id.company_id.intrastat_uom_kg_id
         # ...Weight compute in Kg
         # ...If Uom has the same category of kg -> Convert to Kg
         # ...Else the weight will be product weight * qty
-        product_weight = product_template.weight or 0
+        product_weight = product.weight or 0
         if (
             intrastat_uom_kg
-            and product_template.uom_id.category_id == intrastat_uom_kg.category_id
+            and product.uom_id.category_id == intrastat_uom_kg.category_id
         ):
             weight_kg = self.product_uom_id._compute_quantity(
                 qty=self.quantity, to_unit=intrastat_uom_kg
@@ -298,7 +299,12 @@ class AccountMove(models.Model):
 
     @api.onchange("fiscal_position_id")
     def change_fiscal_position(self):
-        self.intrastat = self.fiscal_position_id.intrastat
+        self.intrastat = (
+            self.is_sale_document()
+            and self.fiscal_position_id.intrastat_sale
+            or self.is_purchase_document()
+            and self.fiscal_position_id.intrastat_purchase
+        )
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):
@@ -309,13 +315,24 @@ class AccountMove(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for val in vals_list:
-            if "intrastat" not in val and "fiscal_position_id" in val:
-                intrastat = (
-                    self.env["account.fiscal.position"]
-                    .browse(val["fiscal_position_id"])
-                    .intrastat
+            if "fiscal_position_id" in val:
+                fiscal_position = self.env["account.fiscal.position"].browse(
+                    val["fiscal_position_id"]
                 )
-                val.update({"intrastat": intrastat})
+                if "intrastat" not in val:
+                    intrastat = False
+                    if "move_type" in val and val.get("move_type"):
+                        if (
+                            val.get("move_type")
+                            in self.env["account.move"].get_sale_types()
+                        ):
+                            intrastat = fiscal_position.intrastat_sale
+                        elif (
+                            val.get("move_type")
+                            in self.env["account.move"].get_purchase_types()
+                        ):
+                            intrastat = fiscal_position.intrastat_purchase
+                    val.update({"intrastat": intrastat})
         return super().create(vals_list)
 
     def action_post(self):
@@ -479,7 +496,9 @@ class AccountInvoiceIntrastat(models.Model):
                 if not line.invoice_id.payment_reference:
                     continue
                 line.invoice_number = (
-                    line.invoice_id.payment_reference or line.invoice_id.name
+                    line.invoice_id.ref
+                    or line.invoice_id.payment_reference
+                    or line.invoice_id.name
                 )
                 if line.invoice_id.invoice_date:
                     line.invoice_date = line.invoice_id.invoice_date
@@ -538,6 +557,9 @@ class AccountInvoiceIntrastat(models.Model):
         string="Invoice",
         ondelete="cascade",
         required=True,
+    )
+    company_id = fields.Many2one(
+        readonly=True, related="invoice_id.company_id", store=True
     )
     partner_id = fields.Many2one(
         string="Partner", readonly=True, related="invoice_id.partner_id", store=True

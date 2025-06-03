@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.osv import expression
 from odoo.tools import float_round
 
 
@@ -44,6 +45,7 @@ class AccountIntrastatStatement(models.Model):
     _name = "account.intrastat.statement"
     _description = "Intrastat Statement"
     _rec_name = "number"
+    _order = "date desc"
 
     def round_min_amount(self, amount, company=None, prec_digits=None, truncate=False):
         """
@@ -767,45 +769,63 @@ class AccountIntrastatStatement(models.Model):
         period_date_start, period_date_stop = self.get_dates_start_stop()
 
         # Search intrastat lines
-        domain = [
-            ("invoice_date", ">=", period_date_start),
-            ("invoice_date", "<=", period_date_stop),
-            ("intrastat", "=", True),
-        ]
-        inv_type = []
+        # filter on invoice_date for sales as date is autocompiled on invoice_date, but
+        # it's invisible to the user
+        domain_sale = []
+        domain_purchase = []
         if self.sale:
-            inv_type += ["out_invoice", "out_refund"]
+            domain_sale = [
+                ("intrastat", "=", True),
+                ("invoice_date", ">=", period_date_start),
+                ("invoice_date", "<=", period_date_stop),
+                ("move_type", "in", ["out_invoice", "out_refund"]),
+            ]
         if self.purchase:
-            inv_type += ["in_invoice", "in_refund"]
-        domain.append(("move_type", "in", inv_type))
+            domain_purchase = [
+                ("intrastat", "=", True),
+                ("date", ">=", period_date_start),
+                ("date", "<=", period_date_stop),
+                ("move_type", "in", ["in_invoice", "in_refund"]),
+            ]
+        domain = expression.OR([domain_sale, domain_purchase])
 
-        statement_data = dict()
+        statement_data = {}
+        section_field_reverse = {}
+        for section_type in ["purchase", "sale"]:
+            for section_number in range(1, 5):
+                statement_section_field = self.get_section_field_name(
+                    section_type, section_number
+                )
+                statement_data[statement_section_field] = list()
+                section_field_reverse["{}_s{}".format(section_type, section_number)] = (
+                    section_type,
+                    section_number,
+                )
+
         invoices = self.env["account.move"].search(domain)
+        if any(invoice.state != "posted" for invoice in invoices):
+            raise ValidationError(
+                _(
+                    "Some invoices in the date range selected are in 'draft' or "
+                    "'cancel' state! Post them or remove the date to proceed: %s"
+                )
+                % " ".join(
+                    invoices.filtered(lambda x: x.state == "draft").mapped(
+                        "partner_id.name"
+                    )
+                )
+            )
 
         for inv_intra_line in invoices.mapped("intrastat_line_ids"):
-            for section_type in ["purchase", "sale"]:
-                for section_number in range(1, 5):
-                    section_details = (section_type, section_number)
-                    statement_section = "%s_s%s" % section_details
-                    if inv_intra_line.statement_section != statement_section:
-                        continue
-                    statement_section_model_name = self.get_section_model(
-                        *section_details
-                    )
-                    st_line = self.env[
-                        statement_section_model_name
-                    ]._prepare_statement_line(inv_intra_line, self)
-                    if not st_line:
-                        continue
-                    statement_section_field = self.get_section_field_name(
-                        *section_details
-                    )
-                    if statement_section_field not in statement_data:
-                        statement_data[statement_section_field] = list()
-                    st_line["sequence"] = (
-                        len(statement_data[statement_section_field]) + 1
-                    )
-                    statement_data[statement_section_field].append((0, 0, st_line))
+            section_details = section_field_reverse[inv_intra_line.statement_section]
+            statement_section_model_name = self.get_section_model(*section_details)
+            st_line = self.env[statement_section_model_name]._prepare_statement_line(
+                inv_intra_line, self
+            )
+            if st_line:
+                statement_section_field = self.get_section_field_name(*section_details)
+                st_line["sequence"] = len(statement_data[statement_section_field]) + 1
+                statement_data[statement_section_field].append((0, 0, st_line))
 
         self.write(statement_data)
         # Group refund to sale lines if they have the same period of ref
@@ -834,6 +854,7 @@ class AccountIntrastatStatement(models.Model):
                         )
                         to_refund_model = self.env[refund_section_model]
                         self.refund_line(line, to_refund_model)
+        self.recompute_sequence_lines()
         return True
 
     @staticmethod

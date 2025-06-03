@@ -21,6 +21,10 @@ class RibaConfiguration(models.Model):
         "Issue Mode",
         required=True,
     )
+    sbf_collection_type = fields.Selection(
+        [("immediate", "Immediate"), ("maturation", "At currency maturation")],
+        "Collection Type",
+    )
     bank_id = fields.Many2one(
         "res.partner.bank",
         "Bank Account",
@@ -65,7 +69,6 @@ class RibaConfiguration(models.Model):
         "account.account",
         "A/C Bank Account",
         check_company=True,
-        domain="[('company_id', '=', company_id), ('internal_type', '=', 'liquidity')]",
     )
     bank_expense_account_id = fields.Many2one("account.account", "Bank Fees Account")
     unsolved_journal_id = fields.Many2one(
@@ -79,7 +82,6 @@ class RibaConfiguration(models.Model):
         "account.account",
         "Past Due Bills Account",
         check_company=True,
-        domain="[('company_id', '=', company_id), ('internal_type', '=', 'receivable')]",
     )
     protest_charge_account_id = fields.Many2one(
         "account.account",

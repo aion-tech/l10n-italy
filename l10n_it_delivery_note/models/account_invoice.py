@@ -125,10 +125,7 @@ class AccountInvoice(models.Model):
             else:
                 sequence = 1
                 done_invoice_lines = self.env["account.move.line"]
-                for dn in invoice.mapped(
-                    "invoice_line_ids.sale_line_ids.delivery_note_line_ids."
-                    "delivery_note_id"
-                ).sorted(key="name"):
+                for dn in invoice.mapped("delivery_note_ids").sorted(key="name"):
                     dn_invoice_lines = invoice.invoice_line_ids.filtered(
                         lambda x: x not in done_invoice_lines
                         and dn
@@ -149,16 +146,18 @@ class AccountInvoice(models.Model):
                                 invoice_line.delivery_note_id = (
                                     note_line.delivery_note_id.id
                                 )
-                    new_lines.append(
-                        (
-                            0,
-                            False,
-                            self._prepare_note_dn_value(sequence, dn),
+                    if dn_invoice_lines:
+                        new_lines.append(
+                            (
+                                0,
+                                False,
+                                self._prepare_note_dn_value(sequence, dn),
+                            )
                         )
-                    )
-                    for invoice_line in dn_invoice_lines:
                         sequence += 1
+                    for invoice_line in dn_invoice_lines:
                         invoice_line.sequence = sequence
+                        sequence += 1
 
             invoice.write({"line_ids": new_lines})
 
@@ -175,6 +174,16 @@ class AccountInvoice(models.Model):
         for dn in dnls_to_unlink.mapped("delivery_note_id"):
             dn.state = "confirm"
         return res
+
+    def button_cancel(self):  # pylint: disable=missing-return
+        super().button_cancel()
+        dn_lines = (
+            self.invoice_line_ids.sale_line_ids.delivery_note_line_ids
+            | self.delivery_note_ids.line_ids
+        )
+        dn_lines.sync_invoice_status()
+        dn_lines.delivery_note_id._compute_invoice_status()
+        dn_lines.delivery_note_id.state = "confirm"
 
 
 class AccountInvoiceLine(models.Model):

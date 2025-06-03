@@ -196,6 +196,9 @@ class FatturapaRelatedDocumentType(models.Model):
             vals["lineRef"] = line.sequence
         return super(FatturapaRelatedDocumentType, self).create(vals)
 
+    def setlineRef(self, n):
+        self.lineRef = n
+
 
 class FatturapaActivityProgress(models.Model):
     # _position = ['2.1.7']
@@ -213,6 +216,7 @@ class FatturaAttachments(models.Model):
     _name = "fatturapa.attachments"
     _description = "E-invoice attachments"
     _inherits = {"ir.attachment": "ir_attachment_id"}
+    _inherit = ["l10n_it_fatturapa.attachment.e_invoice.link"]
 
     ir_attachment_id = fields.Many2one(
         "ir.attachment", "Attachment", required=True, ondelete="cascade"

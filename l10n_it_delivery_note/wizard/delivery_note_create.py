@@ -31,8 +31,6 @@ class StockDeliveryNoteCreateWizard(models.TransientModel):
                 [("code", "=", "outgoing")], limit=1
             )
 
-    partner_shipping_id = fields.Many2one("res.partner", required=True)
-
     date = fields.Date(default=_default_date)
     type_id = fields.Many2one(
         "stock.delivery.note.type", default=_default_type, required=True
@@ -67,9 +65,11 @@ class StockDeliveryNoteCreateWizard(models.TransientModel):
         self.check_compliance(self.selected_picking_ids)
         self.update(
             {
-                "partner_shipping_id": self.partner_id,
-                "partner_id": self.selected_picking_ids.mapped("sale_id.partner_id")
-                if self.selected_picking_ids.mapped("sale_id.partner_id")
+                "partner_shipping_id": self.partner_shipping_id,
+                "partner_id": self.selected_picking_ids.mapped(
+                    "sale_id.partner_invoice_id"
+                )
+                if self.selected_picking_ids.mapped("sale_id.partner_invoice_id")
                 else self.partner_id,
             }
         )
@@ -82,8 +82,8 @@ class StockDeliveryNoteCreateWizard(models.TransientModel):
             ),
             "partner_sender_id": self.partner_sender_id.id,
             "partner_id": (
-                self.selected_picking_ids.mapped("sale_id.partner_id").id
-                if self.selected_picking_ids.mapped("sale_id.partner_id").id
+                sale_order_id.partner_invoice_id.id
+                if sale_order_id.partner_invoice_id
                 else self.partner_id.id
             ),
             "partner_shipping_id": self.partner_shipping_id.id,
@@ -129,7 +129,7 @@ class StockDeliveryNoteCreateWizard(models.TransientModel):
 
         self.selected_picking_ids.write({"delivery_note_id": delivery_note.id})
         if sale_order_id:
-            sale_order_id._assign_delivery_notes_invoices(sale_order_id.invoice_ids)
+            sale_order_id._assign_delivery_notes_invoices(sale_order_id.invoice_ids.ids)
 
         if self.user_has_groups("l10n_it_delivery_note.use_advanced_delivery_notes"):
             return delivery_note.goto()

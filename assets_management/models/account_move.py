@@ -26,6 +26,7 @@ class AccountMove(models.Model):
 
     hide_link_asset_button = fields.Boolean(
         compute="_compute_hide_link_asset_button",
+        compute_sudo=True,
         default=True,
         string="Hide Asset Button",
     )
@@ -98,7 +99,7 @@ class AccountMove(models.Model):
             raise ValidationError(_("Every line is already linked to an asset."))
 
         xmlid = "assets_management.action_wizard_account_move_manage_asset"
-        act = self.env.ref(xmlid).read()[0]
+        act = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
         ctx = dict(self._context)
         ctx.update(
             {

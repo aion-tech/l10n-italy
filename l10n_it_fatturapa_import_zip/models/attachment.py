@@ -1,4 +1,5 @@
 #  Copyright 2023 Simone Rubino - TAKOBI
+#  Copyright 2024 Simone Rubino - Aion Tech
 #  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import base64
@@ -23,7 +24,11 @@ class FatturaPAAttachmentImportZIP(models.Model):
     _name = "fatturapa.attachment.import.zip"
     _description = "E-bill ZIP import"
     _inherits = {"ir.attachment": "ir_attachment_id"}
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = [
+        "mail.thread",
+        "mail.activity.mixin",
+        "l10n_it_fatturapa.attachment.e_invoice.link",
+    ]
     _order = "id desc"
 
     ir_attachment_id = fields.Many2one(
@@ -164,7 +169,9 @@ class FatturaPAAttachmentImportZIP(models.Model):
                     )
                     .create({})
                 )
-                wizard.importFatturaPA()
+                wizard.with_context(
+                    fatturapa_in_skip_no_it_vat_check=True
+                ).importFatturaPA()
             self.env.company.in_invoice_registration_date = (
                 original_in_invoice_registration_date
             )
