@@ -38,6 +38,26 @@ class ResPartnerBankAdd(models.Model):
         help="Identification Code of the Company in the Interbank System.",
     )
 
+    def _check_protected_records(self):
+        protected_records = (
+            self.env["account.move"]
+            .search([("riba_partner_bank_id", "in", self.ids)])
+            .mapped("riba_partner_bank_id")
+        )
+        if protected_records:
+            acc_numbers = [bank.acc_number for bank in protected_records]
+            message = _(
+                "The bank accounts with accreditation code {acc_codes}s"
+                " cannot be deleted as they are used in invoices."
+                " If possible, archive the bank account",
+                acc_codes=", ".join(acc_numbers),
+            )
+            raise UserError(message)
+
+    def unlink(self):
+        self._check_protected_records()
+        return super().unlink()
+
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -141,9 +161,11 @@ class AccountMove(models.Model):
         :param all_date_due: list of due dates for partner
         :return: True if month of invoice_date_due is in a list of all_date_due
         """
-        for d in all_date_due:
-            if invoice_date_due[:7] == str(d.strftime("%Y-%m")):
-                return True
+        self.ensure_one()
+        if self.partner_id.riba_policy_expenses != "unlimited":
+            for d in all_date_due:
+                if invoice_date_due[:7] == str(d.strftime("%Y-%m")):
+                    return True
         return False
 
     def _post(self, soft=True):
@@ -180,6 +202,7 @@ class AccountMove(models.Model):
                 or not invoice.invoice_payment_term_id
                 or not invoice.invoice_payment_term_id.riba
                 or invoice.invoice_payment_term_id.riba_payment_cost == 0.0
+                or invoice.partner_id.commercial_partner_id.riba_exclude_expenses
             ):
                 continue
             if not invoice.company_id.due_cost_service_id:
@@ -189,9 +212,15 @@ class AccountMove(models.Model):
             # ---- Apply Collection Fees on invoice only on first due date of the month
             # ---- Get Date of first due date
             move_line = self.env["account.move.line"].search(
-                [("partner_id", "=", invoice.partner_id.id)]
+                [
+                    ("partner_id", "=", invoice.partner_id.id),
+                    ("move_id.invoice_payment_term_id.riba", "=", True),
+                    ("date_maturity", ">=", fields.Date.context_today(invoice)),
+                ]
             )
-            if not any(line.due_cost_line for line in move_line):
+            if not any(
+                line.due_cost_line for line in move_line.mapped("move_id.line_ids")
+            ):
                 move_line = self.env["account.move.line"]
             # ---- Filtered recordset with date_maturity
             move_line = move_line.filtered(lambda l: l.date_maturity is not False)
@@ -199,12 +228,11 @@ class AccountMove(models.Model):
             move_line = move_line.sorted(key=lambda r: r.date_maturity)
             # ---- Get date
             previous_date_due = move_line.mapped("date_maturity")
-            pterm = self.env["account.payment.term"].browse(
-                self.invoice_payment_term_id.id
+            pterm_list = invoice.invoice_payment_term_id.compute(
+                value=1, date_ref=invoice.invoice_date
             )
-            pterm_list = pterm.compute(value=1, date_ref=self.invoice_date)
             for pay_date in pterm_list:
-                if not self.month_check(pay_date[0], previous_date_due):
+                if not invoice.month_check(pay_date[0], previous_date_due):
                     # ---- Get Line values for service product
                     service_prod = invoice.company_id.due_cost_service_id
                     account = service_prod.product_tmpl_id.get_product_accounts(
@@ -283,6 +311,10 @@ class AccountMove(models.Model):
                 )
                 invoice._recompute_tax_lines()
             invoice.is_unsolved = False
+
+            # if the bank account is archived do not allow the use in the new invoice
+            if not invoice.riba_partner_bank_id.active:
+                invoice.riba_partner_bank_id = False
         return invoice
 
     def get_due_cost_line_ids(self):
@@ -372,11 +404,19 @@ class AccountMoveLine(models.Model):
         return res
 
     def action_riba_issue(self):
+        for line in self:
+            if not line.move_id.riba_partner_bank_id.active:
+                raise UserError(
+                    _(
+                        "Non è possibile emettere una riba legata ad un IBAN archiviato;"
+                        " riga: %s , contatto: %s"
+                    )
+                    % (line.name, line.partner_id.name)
+                )
         ctx = dict(self.env.context)
         ctx.pop("active_id", None)
         ctx["active_ids"] = self.ids
         ctx["active_model"] = "account.move.line"
-
         return {
             "type": "ir.actions.act_window",
             "name": "Issue C/O",

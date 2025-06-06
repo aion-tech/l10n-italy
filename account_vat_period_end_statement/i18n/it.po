@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 12.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-09 12:56+0000\n"
-"PO-Revision-Date: 2024-03-04 07:40+0000\n"
+"PO-Revision-Date: 2025-05-12 09:24+0000\n"
 "Last-Translator: mymage <stefano.consolaro@mymage.it>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 5.10.4\n"
 
 #. module: account_vat_period_end_statement
 #: model:ir.model.fields.selection,name:account_vat_period_end_statement.selection__account_vat_period_end_statement__advance_computation_method__4
@@ -26,6 +26,16 @@ msgstr "\"4\" (soggetti particolari)"
 #: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
 msgid "&amp;nbsp;("
 msgstr "&amp;nbsp;("
+
+#. module: account_vat_period_end_statement
+#: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
+msgid "(credit)"
+msgstr "(credito)"
+
+#. module: account_vat_period_end_statement
+#: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
+msgid "(debit)"
+msgstr "(debito)"
 
 #. module: account_vat_period_end_statement
 #: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.view_account_vat_period_end_statement
@@ -41,11 +51,6 @@ msgstr "<span>Riepilogo</span>"
 #: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
 msgid "<strong>Total Credit</strong>"
 msgstr "<strong>Credito totale</strong>"
-
-#. module: account_vat_period_end_statement
-#: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
-msgid "<strong>Total Statement</strong>"
-msgstr "<strong>Totale liquidazione</strong>"
 
 #. module: account_vat_period_end_statement
 #: model_terms:ir.ui.view,arch_db:account_vat_period_end_statement.report_vatperiodendstatement_document
@@ -765,6 +770,9 @@ msgstr "Non è possibile eliminare una liquidazione confermata o pagata"
 #, python-format
 msgid "You must select documents from the same company!"
 msgstr "Bisogna selezionare documenti della stessa azienda!"
+
+#~ msgid "<strong>Total Statement</strong>"
+#~ msgstr "<strong>Totale liquidazione</strong>"
 
 #~ msgid "Account Lines"
 #~ msgstr "Righe conti"
