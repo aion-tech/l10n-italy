@@ -110,6 +110,7 @@ class AccountVatPeriodEndStatement(models.Model):
     _name = "account.vat.period.end.statement"
     _description = "VAT period end statement"
     _rec_name = "date"
+    _order = "date DESC, id DESC"
 
     debit_vat_account_line_ids = fields.One2many(
         "statement.debit.account.line",
@@ -789,19 +790,7 @@ class AccountVatPeriodEndStatement(models.Model):
                 tax.vat_statement_account_id.id in statement.account_ids.ids
                 or not statement.account_ids
             ):
-                # se ho una tassa padre con figli cee_type, condidero le figlie
-                if any(
-                    tax_ch
-                    for tax_ch in tax.children_tax_ids
-                    if tax_ch.cee_type in ("sale", "purchase")
-                ):
-                    for tax_ch in tax.children_tax_ids:
-                        if tax_ch.cee_type == "sale":
-                            self._set_debit_lines(tax_ch, debit_line_ids, statement)
-                        elif tax_ch.cee_type == "purchase":
-                            self._set_credit_lines(tax_ch, credit_line_ids, statement)
-
-                elif tax.type_tax_use == "sale":
+                if tax.type_tax_use == "sale":
                     self._set_debit_lines(tax, debit_line_ids, statement)
                 elif tax.type_tax_use == "purchase":
                     self._set_credit_lines(tax, credit_line_ids, statement)

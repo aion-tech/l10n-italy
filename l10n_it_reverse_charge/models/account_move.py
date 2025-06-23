@@ -95,11 +95,13 @@ class AccountMove(models.Model):
         else:
             move_type = "out_refund"
         supplier = self.partner_id
+        reference_date = self.invoice_date
         original_invoice = self.search(
             [("rc_self_purchase_invoice_id", "=", self.id)], limit=1
         )
         if original_invoice:
             supplier = original_invoice.partner_id
+            reference_date = original_invoice.invoice_date
 
         narration = _(
             "Reverse charge self invoice.\n"
@@ -109,7 +111,7 @@ class AccountMove(models.Model):
             "Internal reference: %(internal_reference)s",
             supplier=supplier.display_name,
             reference=self.invoice_origin or self.ref or "",
-            date=self.date,
+            date=reference_date,
             internal_reference=self.name,
         )
         return {
@@ -285,7 +287,7 @@ class AccountMove(models.Model):
         payment_debit_line_data = self.rc_debit_line_vals(
             line_to_reconcile.account_id,
             payment_credit_line_data["amount_currency"],
-            payment_credit_line_data["credit"],
+            payment_credit_line_data["credit"] or payment_credit_line_data["debit"],
         )
         rc_payment_data["line_ids"] = [
             (0, 0, payment_debit_line_data),
@@ -469,7 +471,7 @@ class AccountMove(models.Model):
         supplier_invoice_vals["partner_bank_id"] = None
         # because this field has copy=False
         supplier_invoice_vals["date"] = self.date
-        supplier_invoice_vals["invoice_date"] = self.date
+        supplier_invoice_vals["invoice_date"] = self.invoice_date
         supplier_invoice_vals["invoice_origin"] = self.ref or self.name
         supplier_invoice_vals["partner_id"] = rc_type.partner_id.id
         supplier_invoice_vals["journal_id"] = rc_type.supplier_journal_id.id
@@ -479,9 +481,16 @@ class AccountMove(models.Model):
 
         if not supplier_invoice:
             supplier_invoice = self.create(supplier_invoice_vals)
+        else:
+            supplier_invoice.write(supplier_invoice_vals)
         invoice_line_vals = []
         for inv_line in self.invoice_line_ids:
             line_vals = inv_line.copy_data()[0]
+            if line_vals.get("purchase_line_id"):
+                # soft integration: without depending on purchase module,
+                # disable possible link with purchase order line,
+                # because self invoice must not be linked to purchase order
+                line_vals["purchase_line_id"] = False
             line_vals["rc_source_line_id"] = inv_line.id
             line_vals["move_id"] = supplier_invoice.id
             line_vals["analytic_distribution"] = False
