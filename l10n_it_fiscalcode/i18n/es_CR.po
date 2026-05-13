@@ -11,8 +11,8 @@ msgstr ""
 "POT-Creation-Date: 2018-05-25 03:08+0000\n"
 "PO-Revision-Date: 2018-05-25 03:08+0000\n"
 "Last-Translator: OCA Transbot <transbot@odoo-community.org>, 2018\n"
-"Language-Team: Spanish (Costa Rica) (https://www.transifex.com/oca/"
-"teams/23907/es_CR/)\n"
+"Language-Team: Spanish (Costa Rica) (https://www.transifex.com/oca/teams/"
+"23907/es_CR/)\n"
 "Language: es_CR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -245,14 +245,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/l10n_it_fiscalcode/model/res_partner.py:0
 #, python-format
-msgid "The fiscal code isn't valid."
+msgid "The fiscal code '%s' isn't valid."
 msgstr ""
 
 #. module: l10n_it_fiscalcode
 #. odoo-python
 #: code:addons/l10n_it_fiscalcode/model/res_partner.py:0
 #, python-format
-msgid "The fiscal code must have 16 characters."
+msgid "The fiscal code '%s' must have 16 characters."
 msgstr ""
 
 #. module: l10n_it_fiscalcode

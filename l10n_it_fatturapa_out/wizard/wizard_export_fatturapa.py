@@ -4,6 +4,7 @@
 # Copyright 2018 Sergio Corato
 # Copyright 2019 Alex Comba - Agile Business Group
 # Copyright 2023 Simone Rubino - Aion Tech
+# Copyright 2025 Simone Rubino - PyTech
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 import base64
@@ -34,21 +35,8 @@ class WizardExportFatturapa(models.TransientModel):
     _name = "wizard.export.fatturapa"
     _description = "Export E-invoice"
 
-    @api.model
-    def _domain_ir_values(self):
-        model_name = self.env.context.get("active_model", False)
-        # Get all print actions for current model
-        return [
-            ("binding_model_id", "=", model_name),
-        ]
-
-    def _get_selection(self):
-        reports = self.env["ir.actions.report"].sudo().search(self._domain_ir_values())
-        ret = [(str(r.id), r.name) for r in reports]
-        return ret
-
-    report_print_menu = fields.Selection(
-        selection="_get_selection",
+    report_print_menu = fields.Many2one(
+        "ir.actions.report",
         help="This report will be automatically included in the created XML",
     )
 
@@ -127,6 +115,37 @@ class WizardExportFatturapa(models.TransientModel):
             return invoice.amount_total
         else:
             return abs(invoice.amount_total_signed)
+
+    def _get_line_types_from_hide_key(self, hide_key):
+        """Get which line types correspond to `hide_key`.
+
+        Line types are values of `account.move.line.display_type`.
+        Hide key is the value of `res.company.e_invoice_hide_line_type`.
+        """
+        line_types = []
+        if hide_key in ("note", "note_section"):
+            line_types.append("line_note")
+        if hide_key in ("note_section", "section"):
+            line_types.append("line_section")
+        return line_types
+
+    def _hide_invoice_lines(self, invoice):
+        """Exclude `invoice_lines` according to hide settings."""
+        invoice_lines = invoice.invoice_line_ids
+        hide_keys = [
+            invoice.e_invoice_hide_line_type,
+            invoice.partner_id.e_invoice_hide_line_type,
+            self.env.company.e_invoice_hide_line_type,
+        ]
+        for hide_key in hide_keys:
+            if hide_key:
+                to_hide_types = self._get_line_types_from_hide_key(hide_key)
+                invoice_lines = invoice_lines.filtered(
+                    lambda line, to_hide_types=to_hide_types: line.display_type
+                    not in to_hide_types
+                )
+                break
+        return invoice_lines
 
     @api.model
     def getAllTaxes(self, invoice):
@@ -218,6 +237,20 @@ class WizardExportFatturapa(models.TransientModel):
         (and helper functions) passed to template
         """
         return template_values
+
+    @api.model
+    def get_e_invoice_lines(self, invoice):
+        """
+        Invoice lines are not all to be translated to e-invoice lines.
+
+        For instance, some invoice lines will be translated
+        to DatiCassaPrevidenziale nodes.
+        """
+        invoice_lines = self._hide_invoice_lines(invoice)
+        return invoice_lines.sorted(
+            key=lambda li: (-li.sequence, li.date, li.move_name, -li.id),
+            reverse=True,
+        )
 
     def group_invoices_by_partner(self):
         def split_list(my_list, size):
@@ -318,14 +351,9 @@ class WizardExportFatturapa(models.TransientModel):
         return action
 
     def generate_attach_report(self, inv):
-        try:
-            report_id = int(self.report_print_menu)
-        except ValueError as exc:
-            raise UserError(_("Print report not found")) from exc
-
-        report_model = self.env["ir.actions.report"].sudo().browse(report_id)
+        report_model = self.env["ir.actions.report"]
         attachment, attachment_type = report_model._render_qweb_pdf(
-            report_model, inv.ids
+            self.report_print_menu, inv.ids
         )
         att_id = self.env["ir.attachment"].create(
             {

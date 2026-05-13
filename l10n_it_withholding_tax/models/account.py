@@ -293,26 +293,21 @@ class AccountMove(models.Model):
             reconciled_partials, _ = invoice._get_reconciled_invoices_partials()
             amount_net_pay_residual = invoice.amount_total - withholding_tax_amount
             invoice.withholding_tax_amount = withholding_tax_amount
-            if reconciled_partials:
-                total_amount = sum(
-                    x[1]
-                    for x in reconciled_partials
-                    if not x[2].withholding_tax_generated_by_move_id
-                )
-                amount_net_pay_residual -= total_amount
-                amount_net_pay_residual = (
-                    0 if amount_net_pay_residual <= 0 else amount_net_pay_residual
-                )
-                invoice.amount_net_pay_residual = float_round(
-                    amount_net_pay_residual, dp_obj.precision_get("Account")
-                )
-            else:
-                invoice.amount_net_pay = invoice.amount_total - withholding_tax_amount
-                amount_net_pay_residual = invoice.amount_net_pay
-                invoice.withholding_tax_amount = withholding_tax_amount
-                invoice.amount_net_pay_residual = float_round(
-                    amount_net_pay_residual, dp_obj.precision_get("Account")
-                )
+
+            reconciled_lines = invoice.line_ids.filtered(
+                lambda line: line.account_id.account_type
+                in ("asset_receivable", "liability_payable")
+            )
+            reconciled_amls = reconciled_lines.mapped(
+                "matched_debit_ids.debit_move_id"
+            ) + reconciled_lines.mapped("matched_credit_ids.credit_move_id")
+
+            for line in reconciled_amls:
+                if not line.withholding_tax_generated_by_move_id:
+                    amount_net_pay_residual -= abs(line.amount_currency)
+            invoice.amount_net_pay_residual = float_round(
+                amount_net_pay_residual, dp_obj.precision_get("Account")
+            )
 
     withholding_tax = fields.Boolean()
     withholding_tax_in_print = fields.Boolean(
